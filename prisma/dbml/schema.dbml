@@ -1,0 +1,179 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id String [pk]
+  username String
+  email String [unique]
+  password String [not null]
+  emailVerified Boolean [not null, default: false]
+  verificationToken String
+  role UserRole [not null, default: 'USER']
+  userProfile UserProfile
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+}
+
+Table UserProfile {
+  id String [pk]
+  username String [not null]
+  emailAddress String [not null]
+  prefix String
+  fullName String
+  codeNumber String
+  phoneNumber String
+  educationLevel String
+  educationYear String
+  description String
+  profileImage String
+  userId String [unique, not null]
+  user User [not null]
+  activities Activity [not null]
+  favoriteBooks FavoriteBook [not null]
+  borrowings Borrow [not null]
+  approvals Borrow [not null]
+  returnApprovals Borrow [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+}
+
+Table FavoriteBook {
+  id String [pk]
+  userId String [not null]
+  bookId String [not null]
+  book Book [not null]
+  user UserProfile [not null]
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table Activity {
+  id String [pk]
+  type ActivityType [not null]
+  userProfileId String [not null]
+  userProfile UserProfile [not null]
+  bookId String
+  book Book
+  categoryId String
+  category Category
+  bannerId String
+  banner Banner
+  borrowingId String
+  borrowing Borrow
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+}
+
+Table Category {
+  id String [pk]
+  title String [not null]
+  slug String [unique, not null]
+  imageUrl String
+  description String
+  creatorId String
+  book Book [not null]
+  activities Activity [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+}
+
+Table Book {
+  id String [pk]
+  title String [not null]
+  slug String [unique, not null]
+  price Int [not null]
+  quantity Int [not null]
+  remaining Int [not null]
+  author String [not null]
+  active Boolean [not null, default: true]
+  imageUrl String
+  imageUrls String[] [not null]
+  description String
+  activities Activity [not null]
+  favoriteBy FavoriteBook [not null]
+  borrowings Borrow [not null]
+  categoryId String [not null]
+  category Category [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+}
+
+Table Banner {
+  id String [pk]
+  imageUrls String[] [not null]
+  activities Activity [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+}
+
+Table Borrow {
+  id String [pk]
+  bookId String [not null]
+  book Book [not null]
+  borrowerId String [not null]
+  borrower UserProfile [not null]
+  approverId String [not null]
+  approver UserProfile [not null]
+  returnApproverId String
+  returnApprover UserProfile
+  borrowDate DateTime [default: `now()`, not null]
+  dueDate DateTime [not null]
+  returnDate DateTime
+  numberOfDays Int [not null]
+  damaged Int [not null, default: 0]
+  isReturned Boolean [not null, default: false]
+  fine Float [not null, default: 0]
+  status BorrowingStatus [not null, default: 'BORROWED']
+  activities Activity [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+}
+
+Enum UserRole {
+  ADMIN
+  USER
+}
+
+Enum ActivityType {
+  CREATE_BOOK
+  UPDATE_BOOK
+  CREATE_CATEGORY
+  UPDATE_CATEGORY
+  CREATE_BANNER
+  UPDATE_BANNER
+  CREATE_BORROW
+  RETURN_APPROVALS
+}
+
+Enum BorrowingStatus {
+  BORROWED
+  RETURNED
+  OVERDUE
+  LOST
+}
+
+Ref: UserProfile.userId - User.id [delete: Cascade]
+
+Ref: FavoriteBook.bookId > Book.id
+
+Ref: FavoriteBook.userId > UserProfile.userId
+
+Ref: Activity.userProfileId > UserProfile.userId
+
+Ref: Activity.bookId > Book.id
+
+Ref: Activity.categoryId > Category.id
+
+Ref: Activity.bannerId > Banner.id
+
+Ref: Activity.borrowingId > Borrow.id
+
+Ref: Book.categoryId > Category.id
+
+Ref: Borrow.bookId > Book.id
+
+Ref: Borrow.borrowerId > UserProfile.userId
+
+Ref: Borrow.approverId > UserProfile.userId
+
+Ref: Borrow.returnApproverId > UserProfile.userId
