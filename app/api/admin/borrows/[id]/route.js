@@ -1,6 +1,6 @@
 // api/admin/borrows/[id]/route.js
 import { NextResponse } from "next/server"; 
-import { prisma } from "@/lib/prisma"; // นำเข้าด้วยชื่อ prisma
+import db from "@/lib/db"; // นำเข้าด้วยชื่อ prisma
 
 export async function PUT(request, { params: { id } }) {
   try {
@@ -9,7 +9,7 @@ export async function PUT(request, { params: { id } }) {
 
     // ตรวจสอบว่า returnApproverId มีอยู่จริง (แก้ไขเป็น prisma)
     if (returnApproverId) {
-      const returnApprover = await prisma.userProfile.findUnique({
+      const returnApprover = await db.userProfile.findUnique({
         where: {
           userId: returnApproverId,
         },
@@ -24,7 +24,7 @@ export async function PUT(request, { params: { id } }) {
     }
 
     // [Backend Validation] ดึงข้อมูลบันทึกการยืมปัจจุบัน (แก้ไขเป็น prisma)
-    const currentBorrow = await prisma.borrow.findUnique({
+    const currentBorrow = await db.borrow.findUnique({
       where: { id }
     });
 
@@ -46,7 +46,7 @@ export async function PUT(request, { params: { id } }) {
     };
 
     // อัปเดตข้อมูลการยืมในฐานข้อมูล (แก้ไขเป็น prisma)
-    const updatedBorrow = await prisma.borrow.update({
+    const updatedBorrow = await db.borrow.update({
       where: {
         id,
       },
@@ -57,7 +57,7 @@ export async function PUT(request, { params: { id } }) {
 
     // อัปเดตข้อมูลจำนวนหนังสือคืนเข้าชั้นสต็อก (+1) (แก้ไขเป็น prisma)
     if (status === "RETURNED" && !currentBorrow.isReturned) {
-      const updateBook = await prisma.book.update({
+      const updateBook = await db.book.update({
         where: {
           id: bookId || currentBorrow.bookId, 
         },
