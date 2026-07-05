@@ -3,7 +3,7 @@ import WideCard from "@/components/frontend/WideCard";
 import React from "react";
 import { getData } from "@/lib/getData";
 import { useQuery } from "@tanstack/react-query";
-
+ว
 export default function page() {
   const {
     data: booksAll,
