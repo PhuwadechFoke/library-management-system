@@ -98,6 +98,23 @@ Table Book {
   updatedAt DateTime
 }
 
+Table DepartmentBook {
+  id String [pk]
+  title String [not null]
+  slug String [unique, not null]
+  department String [not null]
+  price Int [not null, default: 0]
+  quantity Int [not null]
+  remaining Int [not null]
+  author String
+  active Boolean [not null, default: true]
+  imageUrl String
+  imageUrls String[] [not null]
+  description String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime
+}
+
 Table Banner {
   id String [pk]
   imageUrls String[] [not null]
