@@ -113,7 +113,11 @@ export default function DepartmentDetailPage({ params: { slug } }) {
           ) : null}
         </div>
 
-        <HorizontalCard books={currentBooks} isLoading={isLoading} />
+        <HorizontalCard
+           books={currentBooks}
+            isLoading={isLoading}
+           basePath="/books/departments/book"
+          />
 
         {totalPages > 1 ? (
           <PaginationDemo

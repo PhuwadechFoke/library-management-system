@@ -1,11 +1,12 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-export default function BookCard({ book }) {
+
+export default function BookCard({ book, basePath = "/books" }) {
   return (
     <Link
       passHref
-      href={`/books/${book.slug}`}
+      href={`${basePath}/${book.slug}`}
       className=" flex flex-col justify-center items-center overflow-hidden w-full mb-6 group "
     >
       <Image

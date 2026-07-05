@@ -1,14 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      "github.com",
-      "avatars.githubusercontent.com",
-      "images.unsplash.com",
-      "plus.unsplash.com",
-      "utfs.io",
-      "fakeimg.pl",
-    ], // Add other domains as needed
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "github.com",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "plus.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
+      {
+        protocol: "https",
+        hostname: "fakeimg.pl",
+      },
+    ],
   },
   async headers() {
     return [

@@ -2,7 +2,7 @@ import React from "react";
 import BookCard from "./BookCard";
 import { Skeleton } from "../ui/skeleton";
 
-export default function HorizontalCard({ books, isLoading }) {
+export default function HorizontalCard({ books, isLoading, basePath = "/books" }) {
   if (isLoading) {
     return (
       <div className="mt-2 ">
@@ -21,7 +21,7 @@ export default function HorizontalCard({ books, isLoading }) {
       {books.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 items-center">
           {books.map((book, i) => (
-            <BookCard key={i} book={book} />
+            <BookCard key={i} book={book} basePath={basePath} />
           ))}
         </div>
       ) : (
