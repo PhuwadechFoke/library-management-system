@@ -1,13 +1,40 @@
-// api/admin/borrows/[id]/route.js
-import { NextResponse } from "next/server"; 
-import db from "@/lib/db"; // นำเข้าด้วยชื่อ prisma
+import { NextResponse } from "next/server";
+import db from "@/lib/db";
+
+// เพิ่มใหม่: GET สำหรับดึงข้อมูลการยืม 1 รายการ
+export async function GET(request, { params: { id } }) {
+  try {
+    const borrow = await db.borrow.findUnique({
+      where: { id },
+      include: {
+        book: true,
+        userProfile: true,
+      },
+    });
+
+    if (!borrow) {
+      return NextResponse.json(
+        { message: "ไม่พบข้อมูลการยืมนี้" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(borrow);
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      { message: "เกิดข้อผิดพลาดในการดึงข้อมูลการยืม", error: error.message },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PUT(request, { params: { id } }) {
   try {
     const body = await request.json();
     const { returnApproverId, returnDate, fine, damaged, status, bookId } = body;
 
-    // ตรวจสอบว่า returnApproverId มีอยู่จริง (แก้ไขเป็น prisma)
+    // ตรวจสอบว่า returnApproverId มีอยู่จริง
     if (returnApproverId) {
       const returnApprover = await db.userProfile.findUnique({
         where: {
@@ -23,7 +50,7 @@ export async function PUT(request, { params: { id } }) {
       }
     }
 
-    // [Backend Validation] ดึงข้อมูลบันทึกการยืมปัจจุบัน (แก้ไขเป็น prisma)
+    // [Backend Validation] ดึงข้อมูลบันทึกการยืมปัจจุบัน
     const currentBorrow = await db.borrow.findUnique({
       where: { id }
     });
@@ -45,7 +72,7 @@ export async function PUT(request, { params: { id } }) {
       status,
     };
 
-    // อัปเดตข้อมูลการยืมในฐานข้อมูล (แก้ไขเป็น prisma)
+    // อัปเดตข้อมูลการยืมในฐานข้อมูล
     const updatedBorrow = await db.borrow.update({
       where: {
         id,
@@ -55,7 +82,7 @@ export async function PUT(request, { params: { id } }) {
 
     console.log("Updated Borrow:", updatedBorrow);
 
-    // อัปเดตข้อมูลจำนวนหนังสือคืนเข้าชั้นสต็อก (+1) (แก้ไขเป็น prisma)
+    // อัปเดตข้อมูลจำนวนหนังสือคืนเข้าชั้นสต็อก (+1)
     if (status === "RETURNED" && !currentBorrow.isReturned) {
       const updateBook = await db.book.update({
         where: {
