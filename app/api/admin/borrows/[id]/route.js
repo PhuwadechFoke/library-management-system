@@ -8,7 +8,9 @@ export async function GET(request, { params: { id } }) {
       where: { id },
       include: {
         book: true,
-        userProfile: true,
+        borrower: true,
+        approver: true,
+        returnApprover: true,
       },
     });
 
