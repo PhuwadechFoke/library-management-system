@@ -71,9 +71,46 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    min-height: 100vh;
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(circle at top left, hsl(28 55% 60% / 0.16), transparent 28%),
+      radial-gradient(circle at bottom right, hsl(210 35% 45% / 0.14), transparent 30%),
+      linear-gradient(135deg, hsl(35 45% 96%) 0%, hsl(34 28% 92%) 45%, hsl(36 35% 98%) 100%);
+    background-attachment: fixed;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at top left, hsl(34 70% 70% / 0.18), transparent 28%),
+      radial-gradient(circle at bottom right, hsl(208 35% 35% / 0.2), transparent 30%),
+      linear-gradient(135deg, hsl(228 18% 9%) 0%, hsl(240 12% 12%) 45%, hsl(230 15% 16%) 100%);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(120, 81, 35, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120, 81, 35, 0.035) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent 85%);
+    opacity: 0.7;
+  }
+
+  .dark body::before {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    opacity: 0.45;
+  }
+
   /* Hide scrollbar for Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
