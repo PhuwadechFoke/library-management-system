@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 
-// เพิ่มใหม่: GET สำหรับดึงข้อมูลการยืม 1 รายการ
+// GET สำหรับดึงข้อมูลการยืม 1 รายการ
 export async function GET(request, { params: { id } }) {
   try {
     const borrow = await db.borrow.findUnique({
@@ -84,16 +84,21 @@ export async function PUT(request, { params: { id } }) {
 
     console.log("Updated Borrow:", updatedBorrow);
 
-    // อัปเดตข้อมูลจำนวนหนังสือคืนเข้าชั้นสต็อก (+1)
+    // อัปเดตข้อมูลจำนวนหนังสือคืนเข้าชั้นสต็อก (+1) และอัปเดตสถานะอัตโนมัติ
     if (status === "RETURNED" && !currentBorrow.isReturned) {
+      const bookToUpdate = await db.book.findUnique({
+        where: { id: bookId || currentBorrow.bookId },
+      });
+
+      const newRemaining = (bookToUpdate?.remaining ?? 0) + 1;
+
       const updateBook = await db.book.update({
         where: {
           id: bookId || currentBorrow.bookId, 
         },
         data: {
-          remaining: {
-            increment: 1,
-          },
+          remaining: newRemaining,
+          active: newRemaining > 0,
         },
       });
       console.log("Updated Book Stock:", updateBook);

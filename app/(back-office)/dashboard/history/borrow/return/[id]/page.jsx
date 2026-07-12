@@ -34,19 +34,26 @@ export default function Page({ params: { id } }) {
     );
   }
 
-  // --- คำนวณวันเกินกำหนดจริงแบบคงที่จาก Database ---
+  // --- คำนวณวันเกินกำหนด: ถ้าคืนแล้วใช้วันที่คืนจริง ถ้ายังไม่คืนใช้วันนี้ (คำนวณสด) ---
   let overdueDays = 0;
-  if (borrow?.dueDate && borrow?.returnDate) {
-    const dueTime = new Date(borrow.dueDate).setHours(0,0,0,0);
-    const returnTime = new Date(borrow.returnDate).setHours(0,0,0,0);
-    // ถ้ารันวันคืน เกินกำหนดส่ง ให้คำนวณจำนวนวัน
-    if (returnTime > dueTime) {
-      overdueDays = Math.round((returnTime - dueTime) / (1000 * 60 * 60 * 24));
+  if (borrow?.dueDate) {
+    const dueTime = new Date(borrow.dueDate).setHours(0, 0, 0, 0);
+    const compareTime =
+      borrow?.isReturned && borrow?.returnDate
+        ? new Date(borrow.returnDate).setHours(0, 0, 0, 0)
+        : new Date().setHours(0, 0, 0, 0);
+
+    if (compareTime > dueTime) {
+      overdueDays = Math.round((compareTime - dueTime) / (1000 * 60 * 60 * 24));
     }
   }
 
   const currentFineRate = FINE_RATE?.DAY ?? 0;
   const fineAmount = borrow?.book?.price ? Math.round(borrow.book.price * currentFineRate) : 0;
+
+  // ค่าปรับที่คำนวณสด (สำหรับตอนยังไม่คืน) เทียบกับค่าปรับจริงที่บันทึกแล้ว (ตอนคืนแล้ว)
+  const liveFine = overdueDays * fineAmount;
+  const displayFine = borrow?.isReturned ? (borrow?.fine ?? 0) : liveFine + (borrow?.damaged ?? 0);
 
   return (
     <div>
@@ -107,8 +114,14 @@ export default function Page({ params: { id } }) {
                   {borrow?.returnDate ? moment(borrow.returnDate).format("lll") : "-"}
                 </p>
                 <p><strong>จำนวนวันที่กำหนดยืม :</strong> {borrow?.numberOfDays ?? 0} วัน</p>
-                <p><strong>จำนวนวันที่เกินกำหนด :</strong> <span className="text-red-800 dark:text-red-500 font-bold">{overdueDays}</span> วัน</p>
-                
+                <p>
+                  <strong>จำนวนวันที่เกินกำหนด :</strong>{" "}
+                  <span className="text-red-800 dark:text-red-500 font-bold">
+                    {overdueDays}
+                  </span>{" "}
+                  วัน
+                </p>
+
                 <p>
                   <strong>สถานะ :</strong>{" "}
                   <span
@@ -180,9 +193,14 @@ export default function Page({ params: { id } }) {
                 <p>
                   <strong>ค่าปรับรวมสุทธิ :</strong>
                   <span className="text-red-800 dark:text-red-500 font-bold text-lg mx-2">
-                    {(borrow?.fine ?? 0).toLocaleString()}
+                    {displayFine.toLocaleString()}
                   </span>
                   บาท
+                  {!borrow?.isReturned && overdueDays > 0 && (
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (ประมาณการ ณ วันนี้)
+                    </span>
+                  )}
                 </p>
               </div>
             </div>

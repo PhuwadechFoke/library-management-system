@@ -32,10 +32,14 @@ export async function POST(request) {
       );
     }
 
-    // ลดจำนวนคงเหลือของหนังสือลง 1
+    // ลดจำนวนคงเหลือของหนังสือลง 1 และอัปเดตสถานะอัตโนมัติ
+    const newRemaining = book.remaining - 1;
     const updatedBook = await db.book.update({
       where: { id: bookId },
-      data: { remaining: book.remaining - 1 },
+      data: {
+        remaining: newRemaining,
+        active: newRemaining > 0,
+      },
     });
 
     // สร้างบันทึกการยืมใหม่ในฐานข้อมูล
@@ -109,4 +113,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+};
