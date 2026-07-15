@@ -1,6 +1,8 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request, { params: { id } }) {
   try {
     const existingBook = await db.book.findUnique({
@@ -20,7 +22,12 @@ export async function GET(request, { params: { id } }) {
         { status: 404 }
       );
     }
-    return NextResponse.json(existingBook);
+    return NextResponse.json(existingBook, {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
   } catch (error) {
     console.log(error);
     return NextResponse.json(

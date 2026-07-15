@@ -25,6 +25,7 @@ export default function SelectInput({
           multiple={multiple}
           className="appearance-none border bg-background text-muted-foreground px-1.5 sm:px-3 py-2 text-sm rounded-md w-full"
         >
+          <option value="">เลือกหมวดหมู่</option>
           {options.map((option, i) => {
             return (
               <option

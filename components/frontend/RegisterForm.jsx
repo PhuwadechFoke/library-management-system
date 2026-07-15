@@ -30,10 +30,7 @@ export default function RegisterForm() {
     try {
       setLoading(true);
       dispatch(isLoading(true));
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      console.log(baseUrl);
-
-      const response = await fetch(`${baseUrl}/api/users`, {
+      const response = await fetch(`/api/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

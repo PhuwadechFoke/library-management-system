@@ -16,13 +16,13 @@ import { isLoading } from "@/redux/slices/loadingFullScreenSlice";
 
 export default function BookForm({
   updateData = {},
-  categories,
+  categories = [],
   loading,
   adminId,
 }) {
   const dispatch = useDispatch();
-  
-  const initialImageUrls = updateData?.imageUrls ?? [];
+
+  const initialImageUrls = Array.isArray(updateData?.imageUrls) ? updateData.imageUrls : [];
   const id = updateData?.id ?? "";
   const [imageUrls, setImageUrls] = useState(initialImageUrls);
 
@@ -37,7 +37,13 @@ export default function BookForm({
     formState: { errors },
   } = useForm({
     defaultValues: {
-      ...updateData,
+      title: updateData?.title ?? "",
+      price: updateData?.price ?? 0,
+      quantity: updateData?.quantity ?? 0,
+      remaining: updateData?.remaining ?? 0,
+      author: updateData?.author ?? "",
+      categoryId: updateData?.categoryId ?? "",
+      description: updateData?.description ?? "",
     },
   });
 
@@ -56,19 +62,18 @@ export default function BookForm({
       return;
     }
 
-    const slug = generateSlug(data.title);
-    
-    // เตรียมข้อมูลให้เป็น Object ที่สะอาด
+    const slug = generateSlug(data.title || "book");
+
     const payload = {
       ...data,
-      slug: slug,
-      imageUrls: imageUrls,
-      adminId: adminId,
+      slug,
+      imageUrls,
+      adminId,
       price: parseFloat(data.price) || 0,
       quantity: parseInt(data.quantity, 10) || 0,
-      remaining: id 
-        ? (parseInt(data.remaining, 10) || 0) 
-        : (parseInt(data.quantity, 10) || 0)
+      remaining: id
+        ? parseInt(data.remaining, 10) || 0
+        : parseInt(data.quantity, 10) || 0,
     };
 
     if (id) {
