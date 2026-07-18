@@ -53,6 +53,7 @@ model UserProfile {
 
   activities      Activity[]
   favoriteBooks   FavoriteBook[]
+  reservations    Reservation[]
   borrowings      Borrow[]       @relation("borrower")
   approvals       Borrow[]       @relation("approver")
   returnApprovals Borrow[]       @relation("returnApprover")
@@ -129,9 +130,10 @@ model Book {
   imageUrls   String[]
   description String?
 
-  activities Activity[]
-  favoriteBy FavoriteBook[]
-  borrowings Borrow[]
+  activities   Activity[]
+  favoriteBy   FavoriteBook[]
+  reservations Reservation[]
+  borrowings   Borrow[]
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
@@ -197,4 +199,16 @@ model Borrow {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+}
+
+model Reservation {
+  id     String  @id @default(uuid())
+  userId String
+  bookId String
+  isRead Boolean @default(false)
+
+  book Book        @relation(fields: [bookId], references: [id])
+  user UserProfile @relation(fields: [userId], references: [userId])
+
+  createdAt DateTime @default(now())
 }

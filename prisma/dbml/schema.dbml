@@ -31,6 +31,7 @@ Table UserProfile {
   user User [not null]
   activities Activity [not null]
   favoriteBooks FavoriteBook [not null]
+  reservations Reservation [not null]
   borrowings Borrow [not null]
   approvals Borrow [not null]
   returnApprovals Borrow [not null]
@@ -91,6 +92,7 @@ Table Book {
   description String
   activities Activity [not null]
   favoriteBy FavoriteBook [not null]
+  reservations Reservation [not null]
   borrowings Borrow [not null]
   categoryId String [not null]
   category Category [not null]
@@ -146,6 +148,16 @@ Table Borrow {
   updatedAt DateTime
 }
 
+Table Reservation {
+  id String [pk]
+  userId String [not null]
+  bookId String [not null]
+  isRead Boolean [not null, default: false]
+  book Book [not null]
+  user UserProfile [not null]
+  createdAt DateTime [default: `now()`, not null]
+}
+
 Enum UserRole {
   ADMIN
   USER
@@ -194,3 +206,7 @@ Ref: Borrow.borrowerId > UserProfile.userId
 Ref: Borrow.approverId > UserProfile.userId
 
 Ref: Borrow.returnApproverId > UserProfile.userId
+
+Ref: Reservation.bookId > Book.id
+
+Ref: Reservation.userId > UserProfile.userId
