@@ -202,10 +202,11 @@ model Borrow {
 }
 
 model Reservation {
-  id     String  @id @default(uuid())
-  userId String
-  bookId String
-  isRead Boolean @default(false)
+  id           String  @id @default(uuid())
+  userId       String
+  bookId       String
+  isRead       Boolean @default(false)
+  numberOfDays Int     @default(3)
 
   book Book        @relation(fields: [bookId], references: [id])
   user UserProfile @relation(fields: [userId], references: [userId])

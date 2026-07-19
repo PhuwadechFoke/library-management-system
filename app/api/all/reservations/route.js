@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 export async function POST(request) {
   try {
-    const { userId, bookId } = await request.json();
+    const { userId, bookId, numberOfDays } = await request.json();
 
     if (!userId || !bookId) {
       return NextResponse.json({ message: "ข้อมูลไม่ครบถ้วน" }, { status: 400 });
@@ -22,7 +22,7 @@ export async function POST(request) {
       return NextResponse.json({ message: "หนังสือเล่มนี้ไม่สามารถจองได้ในขณะนี้" }, { status: 409 });
     }
 
-    const existingReservation = await db.favoriteBook.findFirst({
+    const existingReservation = await db.reservation.findFirst({
       where: { userId, bookId },
     });
 
@@ -40,10 +40,11 @@ export async function POST(request) {
         },
       });
 
-      const reservation = await tx.favoriteBook.create({
+      const reservation = await tx.reservation.create({
         data: {
           userId,
           bookId,
+          numberOfDays: parseInt(numberOfDays) || 3,
         },
       });
 

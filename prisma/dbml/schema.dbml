@@ -153,6 +153,7 @@ Table Reservation {
   userId String [not null]
   bookId String [not null]
   isRead Boolean [not null, default: false]
+  numberOfDays Int [not null, default: 3]
   book Book [not null]
   user UserProfile [not null]
   createdAt DateTime [default: `now()`, not null]
