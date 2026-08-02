@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
+import { sendReservationReadyNotification } from "@/lib/borrow-reminders";
 
 export async function POST(request, { params: { id } }) {
   try {
@@ -7,7 +8,10 @@ export async function POST(request, { params: { id } }) {
 
     const reservation = await db.reservation.findUnique({
       where: { id },
-      include: { book: true },
+      include: {
+        book: true,
+        user: { include: { user: { select: { email: true } } } },
+      },
     });
 
     if (!reservation) {
@@ -46,7 +50,17 @@ export async function POST(request, { params: { id } }) {
       return borrow;
     });
 
-    return NextResponse.json(result, { status: 201 });
+    let emailSent = false;
+    try {
+      await sendReservationReadyNotification({ reservation });
+      emailSent = true;
+    } catch (emailError) {
+      // The reservation has already become a borrow record; do not undo that work
+      // just because the mail provider is temporarily unavailable.
+      console.error(`Could not send ready-for-pickup email for reservation ${id}:`, emailError);
+    }
+
+    return NextResponse.json({ ...result, emailSent }, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

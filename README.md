@@ -63,6 +63,8 @@ Ensure you have the following installed on your machine:
 
 The application sends an email one day before the due date and once each day after a book becomes overdue. Each reminder is recorded so the same type is not sent twice on the same day.
 
+When an administrator confirms a reservation, the borrower also receives an email that the reserved book is ready to collect. A temporary email failure does not cancel the confirmed borrowing record.
+
 On Vercel, the scheduled job in `vercel.json` calls `/api/cron/borrow-reminders` every day at 08:00 Asia/Bangkok time (01:00 UTC). Add `CRON_SECRET` to the Vercel project environment variables; Vercel sends it automatically as a Bearer token.
 
 For local/manual testing, call the endpoint with the same secret:
