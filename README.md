@@ -36,6 +36,7 @@ Ensure you have the following installed on your machine:
    NEXTAUTH_SECRET="your-secret"
    NODEMAILER_USER="your-email"
    NODEMAILER_PASSWORD="your-app-password-email"
+   CRON_SECRET="a-long-random-secret-used-to-authorize-scheduled-jobs"
    UPLOADTHING_SECRET="your-secret"
    UPLOADTHING_APP_ID="your-app-id"
    NEXT_PUBLIC_BASE_URL="http://localhost:3000"
@@ -57,6 +58,18 @@ Ensure you have the following installed on your machine:
    yarn dev
    ```
    _The server should be running at http://localhost:3000_
+
+### Borrow-return email reminders
+
+The application sends an email one day before the due date and once each day after a book becomes overdue. Each reminder is recorded so the same type is not sent twice on the same day.
+
+On Vercel, the scheduled job in `vercel.json` calls `/api/cron/borrow-reminders` every day at 08:00 Asia/Bangkok time (01:00 UTC). Add `CRON_SECRET` to the Vercel project environment variables; Vercel sends it automatically as a Bearer token.
+
+For local/manual testing, call the endpoint with the same secret:
+
+```bash
+curl -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron/borrow-reminders
+```
 
 
 # ER Diagram

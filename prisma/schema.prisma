@@ -21,11 +21,11 @@ enum UserRole {
 }
 
 model User {
-  id                String    @id @default(uuid())
+  id                String  @id @default(uuid())
   username          String?
-  email             String?   @unique
+  email             String? @unique
   password          String
-  emailVerified     Boolean   @default(false)
+  emailVerified     Boolean @default(false)
   verificationToken String?
 
   role        UserRole     @default(USER)
@@ -176,6 +176,11 @@ enum BorrowingStatus {
   LOST
 }
 
+enum BorrowReminderType {
+  DUE_TOMORROW
+  OVERDUE
+}
+
 model Borrow {
   id               String       @id @default(uuid())
   bookId           String
@@ -187,18 +192,32 @@ model Borrow {
   returnApproverId String?
   returnApprover   UserProfile? @relation("returnApprover", fields: [returnApproverId], references: [userId])
 
-  borrowDate   DateTime        @default(now())
+  borrowDate   DateTime         @default(now())
   dueDate      DateTime
   returnDate   DateTime?
   numberOfDays Int
-  damaged      Int             @default(0)
-  isReturned   Boolean         @default(false)
-  fine         Float           @default(0)
-  status       BorrowingStatus @default(BORROWED)
+  damaged      Int              @default(0)
+  isReturned   Boolean          @default(false)
+  fine         Float            @default(0)
+  status       BorrowingStatus  @default(BORROWED)
   activities   Activity[]
+  reminders    BorrowReminder[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+}
+
+model BorrowReminder {
+  id          String             @id @default(uuid())
+  borrowId    String
+  type        BorrowReminderType
+  reminderDay DateTime
+  sentAt      DateTime           @default(now())
+
+  borrow Borrow @relation(fields: [borrowId], references: [id], onDelete: Cascade)
+
+  @@unique([borrowId, type, reminderDay])
+  @@index([reminderDay])
 }
 
 model Reservation {
