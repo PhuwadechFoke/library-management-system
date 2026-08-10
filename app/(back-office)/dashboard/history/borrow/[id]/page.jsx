@@ -93,10 +93,9 @@ export default function Page({ params: { id } }) {
         data.status = isLost ? "LOST" : "RETURNED";
         data.bookId = borrow?.bookId;
     
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
         dispatch(isLoading(true));
         try {
-          const res = await fetch(`${baseUrl}/api/admin/borrows/${id}`, {
+          const res = await fetch(`/api/admin/borrows/${id}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",

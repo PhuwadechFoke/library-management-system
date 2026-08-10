@@ -20,13 +20,12 @@ export default function ResetPasswordForm() {
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(data) {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const token = searchParams.get("token");
     const id = searchParams.get("id");
     data.id = id;
     try {
       setLoading(true);
-      const response = await fetch(`${baseUrl}/api/users/update-password`, {
+      const response = await fetch("/api/users/update-password", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

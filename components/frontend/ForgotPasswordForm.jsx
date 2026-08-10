@@ -25,8 +25,7 @@ export default function ForgotPasswordForm() {
     console.log(data);
     try {
       setLoading(true);
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      const response = await fetch(`${baseUrl}/api/users/forgot-password`, {
+      const response = await fetch("/api/users/forgot-password", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -73,6 +73,20 @@ For local/manual testing, call the endpoint with the same secret:
 curl -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron/borrow-reminders
 ```
 
+### Vercel deployment
+
+In **Vercel → Project → Settings → Environment Variables**, set these values for the Production environment and redeploy:
+
+```bash
+DATABASE_URL="your Supabase pooled connection URL"
+DIRECT_URL="your Supabase direct connection URL"
+NEXTAUTH_URL="https://your-project.vercel.app"
+NEXT_PUBLIC_BASE_URL="https://your-project.vercel.app"
+NEXTAUTH_SECRET="a-long-random-secret"
+```
+
+Do not use `http://localhost:3000` for either URL on Vercel. Client-side API calls use relative URLs, so they always target the deployed site rather than a local machine.
+
 
 # ER Diagram
 

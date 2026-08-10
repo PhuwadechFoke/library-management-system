@@ -90,9 +90,8 @@ export default function SettingProfile({ params: { id } }) {
     try {
       setLoading(true);
       dispatch(isLoading(true));
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
       data.profileImage = imageUrl;
-      const response = await fetch(`${baseUrl}/api/users/user-profile/${id}`, {
+      const response = await fetch(`/api/users/user-profile/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

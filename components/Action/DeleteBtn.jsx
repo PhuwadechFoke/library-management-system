@@ -11,7 +11,6 @@ import Swal from "sweetalert2";
 
 export default function DeleteBtn({ endpoint, title, refreshQueryKey }) {
   const [loading, setLoading] = useState(false);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const router = useRouter();
   const dispatch = useDispatch();
   const onSuccess = () => {
@@ -32,7 +31,7 @@ export default function DeleteBtn({ endpoint, title, refreshQueryKey }) {
     }).then(async (result) => {
       if (result.isConfirmed) {
         dispatch(isLoading(true));
-        const res = await fetch(`${baseUrl}/api/${endpoint}`, {
+        const res = await fetch(`/api/${endpoint}`, {
           method: "DELETE",
         });
         if (res.status === 409) {

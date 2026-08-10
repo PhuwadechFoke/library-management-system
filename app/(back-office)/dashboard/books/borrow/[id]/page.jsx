@@ -114,10 +114,9 @@ export default function page({ params: { id } }) {
         data.dueDate = date.to;
         data.numberOfDays = numberOfDays;
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
         dispatch(isLoading(true));
         try {
-          const res = await fetch(`${baseUrl}/api/admin/borrows`, {
+          const res = await fetch("/api/admin/borrows", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
