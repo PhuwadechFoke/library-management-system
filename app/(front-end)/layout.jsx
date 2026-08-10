@@ -1,5 +1,6 @@
 // components/Layout.jsx
 import Navbar from "@/components/frontend/navbar/Navbar";
+import FaqChatbot from "@/components/frontend/FaqChatbot";
 import React from "react";
 
 export default function Layout({ children }) {
@@ -9,6 +10,7 @@ export default function Layout({ children }) {
       <div className="max-w-7xl mx-auto py-3 sm:py-4 px-4 sm:px-0">
         <div>{children}</div>
       </div>
+      <FaqChatbot />
     </div>
   );
 }
