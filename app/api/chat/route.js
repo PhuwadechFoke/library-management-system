@@ -1,0 +1,118 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { NextResponse } from "next/server";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const SYSTEM_PROMPT = `คุณคือผู้ช่วย AI ของระบบห้องสมุดออนไลน์ชื่อ "LibraryBot" มีบุคลิกเป็นมิตร กระตือรือร้น และเป็นประโยชน์
+
+ข้อมูลระบบห้องสมุดที่คุณรู้:
+- ค้นหาหนังสือ: ไปที่เมนู "หนังสือทั้งหมด" แล้วพิมพ์ชื่อหรือหมวดหมู่ในช่องค้นหา
+- การยืมหนังสือ: ตรวจสอบจำนวนคงเหลือในหน้ารายละเอียดหนังสือ แล้วติดต่อเจ้าหน้าที่ห้องสมุด รายการยืมจะแสดงใน "หนังสือของฉัน"
+- การจองหนังสือ: กดปุ่มจองในหน้ารายละเอียดหนังสือ หลังเจ้าหน้าที่อนุมัติจะได้รับอีเมลแจ้ง
+- กำหนดคืน: ดูได้ที่เมนู "หนังสือของฉัน" ระบบส่งอีเมลเตือน 1 วันก่อนครบกำหนด และเตือนทุกวันหากเกินกำหนด
+- ค่าปรับ: เจ้าหน้าที่ประเมินในขั้นตอนรับคืน ติดต่อห้องสมุดเพื่อรายละเอียด
+- รายการโปรด: กดไอคอนหัวใจในหน้ารายละเอียดหนังสือ ดูได้จากเมนู "รายการโปรด"
+- สถิติ: เปิดเมนู "สถิติห้องสมุด" เพื่อดูหนังสือยอดนิยมและรายการค้างคืน
+
+กฎการตอบ:
+- ตอบเป็นภาษาเดียวกับที่ผู้ใช้ถาม (ไทย = ตอบไทย, English = answer in English)
+- ตอบกระชับ ชัดเจน ไม่ยาวเกินไป
+- ถ้าถามเรื่องห้องสมุด ตอบข้อมูลระบบที่รู้
+- ถ้าถามคำถามทั่วไป ตอบได้ตามปกติ เช่น คณิตศาสตร์ วิทยาศาสตร์ ประวัติศาสตร์ ฯลฯ
+- ไม่ต้องแนะนำตัวซ้ำทุกข้อความ`;
+
+/** ดึง retry delay จาก error details (วินาที) */
+function getRetryDelay(error) {
+  try {
+    const details = error?.errorDetails ?? [];
+    const retryInfo = details.find((d) =>
+      d["@type"]?.includes("RetryInfo")
+    );
+    if (retryInfo?.retryDelay) {
+      const seconds = parseInt(retryInfo.retryDelay, 10);
+      return isNaN(seconds) ? 20 : seconds;
+    }
+  } catch {}
+  return 20;
+}
+
+/** ส่ง message ไปยัง Gemini พร้อม retry อัตโนมัติ 1 ครั้ง */
+async function sendWithRetry(model, history, userMessage, maxRetries = 1) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const chat = model.startChat({ history });
+      const result = await chat.sendMessage(userMessage.trim());
+      return result.response.text();
+    } catch (error) {
+      const status = error?.status ?? error?.response?.status;
+
+      // 429 — rate limited
+      if (status === 429) {
+        if (attempt < maxRetries) {
+          const delaySec = getRetryDelay(error);
+          console.log(`Rate limited. Retrying in ${delaySec}s…`);
+          await new Promise((r) => setTimeout(r, delaySec * 1000));
+          continue;
+        }
+        // หมด retry — โยน error พิเศษ
+        const delaySec = getRetryDelay(error);
+        const retryError = new Error("RATE_LIMITED");
+        retryError.retryAfter = delaySec;
+        throw retryError;
+      }
+
+      throw error;
+    }
+  }
+}
+
+export async function POST(request) {
+  try {
+    const { messages, userMessage } = await request.json();
+
+    if (!userMessage?.trim()) {
+      return NextResponse.json({ error: "กรุณาพิมพ์คำถาม" }, { status: 400 });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: "ยังไม่ได้ตั้งค่า GEMINI_API_KEY" },
+        { status: 500 }
+      );
+    }
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      systemInstruction: SYSTEM_PROMPT,
+    });
+
+    // Build chat history (exclude welcome message)
+    const history = (messages || [])
+      .filter((m) => m.role !== "bot" || m.isWelcome !== true)
+      .map((m) => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.text }],
+      }));
+
+    const responseText = await sendWithRetry(model, history, userMessage);
+    return NextResponse.json({ reply: responseText });
+  } catch (error) {
+    console.error("Gemini API error:", error);
+
+    // Rate limit — แจ้งให้ frontend รู้ว่าต้องรออีกกี่วินาที
+    if (error.message === "RATE_LIMITED") {
+      return NextResponse.json(
+        {
+          error: "RATE_LIMITED",
+          retryAfter: error.retryAfter ?? 20,
+        },
+        { status: 429 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "เกิดข้อผิดพลาดในการเชื่อมต่อ AI กรุณาลองใหม่อีกครั้ง" },
+      { status: 500 }
+    );
+  }
+}
