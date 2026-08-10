@@ -70,13 +70,21 @@ export default function FaqChatbot() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // ใช้ ref เพื่อได้ messages ล่าสุดเสมอ (ไม่มี stale closure)
           messages: messagesRef.current,
           userMessage: trimmed,
         }),
       });
 
-      const data = await response.json();
+      // อ่าน raw text ก่อน แล้วค่อย parse JSON เพื่อป้องกัน crash
+      const rawText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        // Server ส่ง plain text มา (เช่น Next.js error page)
+        console.error("Non-JSON response:", rawText);
+        throw new Error("เซิร์ฟเวอร์เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+      }
 
       // Rate limit
       if (response.status === 429 && data.error === "RATE_LIMITED") {

@@ -1,7 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = process.env.GEMINI_API_KEY
+  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  : null;
 
 const SYSTEM_PROMPT = `คุณคือผู้ช่วย AI ของระบบห้องสมุดออนไลน์ชื่อ "LibraryBot" มีบุคลิกเป็นมิตร กระตือรือร้น และเป็นประโยชน์
 
@@ -74,9 +76,9 @@ export async function POST(request) {
       return NextResponse.json({ error: "กรุณาพิมพ์คำถาม" }, { status: 400 });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!genAI) {
       return NextResponse.json(
-        { error: "ยังไม่ได้ตั้งค่า GEMINI_API_KEY" },
+        { error: "ยังไม่ได้ตั้งค่า GEMINI_API_KEY — กรุณาเพิ่มใน Environment Variables" },
         { status: 500 }
       );
     }
