@@ -2,6 +2,7 @@ import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import Providers from "@/context/Providers";
 import { cn } from "@/lib/utils";
+import FaqChatbot from "@/components/frontend/FaqChatbot";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
       >
         <Providers>
           {children}
+          <FaqChatbot />
         </Providers>
       </body>
     </html>
