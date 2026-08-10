@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { Bot, MessageCircle, Send, X, Loader2, AlertCircle, Trash2, RefreshCw, Clock } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Bot, MessageCircle, Send, X, Loader2,
+  AlertCircle, Trash2, RefreshCw, Clock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { suggestedQuestions } from "@/lib/chatbotFaq";
 
@@ -16,18 +19,24 @@ export default function FaqChatbot() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([welcomeMessage]);
   const [isLoading, setIsLoading] = useState(false);
-  // countdown สำหรับ rate limit (วินาที, null = ไม่ได้ถูก limit)
   const [rateLimitCountdown, setRateLimitCountdown] = useState(null);
-  // เก็บคำถามล่าสุดไว้สำหรับ retry
+
+  // useRef เพื่อให้ async functions เข้าถึง state ล่าสุดได้เสมอ
+  const messagesRef = useRef([welcomeMessage]);
   const pendingRetry = useRef(null);
   const countdownRef = useRef(null);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Sync ref กับ state
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   // Auto-scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading, rateLimitCountdown]);
+  }, [messages, isLoading]);
 
   // Focus on open
   useEffect(() => {
@@ -37,82 +46,81 @@ export default function FaqChatbot() {
   // Cleanup countdown on unmount
   useEffect(() => () => clearInterval(countdownRef.current), []);
 
-  /** เริ่ม countdown แล้ว retry อัตโนมัติเมื่อหมดเวลา */
-  function startRateLimitCountdown(seconds, questionToRetry) {
-    pendingRetry.current = questionToRetry;
-    setRateLimitCountdown(seconds);
-
-    let remaining = seconds;
-    countdownRef.current = setInterval(() => {
-      remaining -= 1;
-      if (remaining <= 0) {
-        clearInterval(countdownRef.current);
-        setRateLimitCountdown(null);
-        // Retry อัตโนมัติ
-        if (pendingRetry.current) {
-          const q = pendingRetry.current;
-          pendingRetry.current = null;
-          sendMessage(q, true); // isRetry = true (ไม่เพิ่ม user bubble ซ้ำ)
-        }
-      } else {
-        setRateLimitCountdown(remaining);
-      }
-    }, 1000);
+  function addMessage(msg) {
+    setMessages((prev) => {
+      const next = [...prev, msg];
+      messagesRef.current = next;
+      return next;
+    });
   }
 
-  const sendMessage = useCallback(async (text, isRetry = false) => {
-    if (!text?.trim() || isLoading) return;
+  async function sendMessage(text, isRetry = false) {
+    const trimmed = text?.trim();
+    if (!trimmed) return;
 
-    // ถ้าไม่ใช่ retry ให้เพิ่ม user bubble
+    // เพิ่ม user bubble (ถ้าไม่ใช่ retry)
     if (!isRetry) {
-      setMessages((prev) => [...prev, { role: "user", text }]);
+      addMessage({ role: "user", text: trimmed });
       setInput("");
     }
     setIsLoading(true);
 
     try {
-      // ดึง messages ปัจจุบัน (ต้องใช้ functional update เพื่อให้ได้ค่าล่าสุด)
-      const currentMessages = await new Promise((resolve) => {
-        setMessages((prev) => {
-          resolve(prev);
-          return prev;
-        });
-      });
-
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: currentMessages,
-          userMessage: text,
+          // ใช้ ref เพื่อได้ messages ล่าสุดเสมอ (ไม่มี stale closure)
+          messages: messagesRef.current,
+          userMessage: trimmed,
         }),
       });
 
       const data = await response.json();
 
+      // Rate limit
       if (response.status === 429 && data.error === "RATE_LIMITED") {
         const waitSec = data.retryAfter ?? 20;
-        // เพิ่ม error bubble พร้อมข้อมูล retry
-        setMessages((prev) => [
-          ...prev,
-          { role: "bot", isRateLimit: true, retryAfter: waitSec, text: "" },
-        ]);
-        startRateLimitCountdown(waitSec, text);
+        addMessage({ role: "bot", isRateLimit: true, text: "" });
+        startRateLimitCountdown(waitSec, trimmed);
         return;
       }
 
-      if (!response.ok) throw new Error(data.error || "เกิดข้อผิดพลาด");
+      if (!response.ok) {
+        throw new Error(data.error || "เกิดข้อผิดพลาด");
+      }
 
-      setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        { role: "bot", isError: true, text: error.message || "เกิดข้อผิดพลาด กรุณาลองใหม่" },
-      ]);
+      addMessage({ role: "bot", text: data.reply });
+    } catch (err) {
+      addMessage({
+        role: "bot",
+        isError: true,
+        text: err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }
+
+  function startRateLimitCountdown(seconds, question) {
+    pendingRetry.current = question;
+    setRateLimitCountdown(seconds);
+
+    let remaining = seconds;
+    clearInterval(countdownRef.current);
+    countdownRef.current = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearInterval(countdownRef.current);
+        setRateLimitCountdown(null);
+        const q = pendingRetry.current;
+        pendingRetry.current = null;
+        if (q) sendMessage(q, true);
+      } else {
+        setRateLimitCountdown(remaining);
+      }
+    }, 1000);
+  }
 
   function ask(question) {
     const text = question.trim();
@@ -136,11 +144,11 @@ export default function FaqChatbot() {
     clearInterval(countdownRef.current);
     setRateLimitCountdown(null);
     pendingRetry.current = null;
+    messagesRef.current = [welcomeMessage];
     setMessages([welcomeMessage]);
     setInput("");
   }
 
-  /** ยกเลิก countdown และ retry ทันที */
   function handleRetryNow() {
     clearInterval(countdownRef.current);
     setRateLimitCountdown(null);
@@ -210,16 +218,13 @@ export default function FaqChatbot() {
                   </div>
                 )}
 
-                {/* Rate limit bubble */}
                 {message.isRateLimit ? (
                   <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950">
-                    <p className="font-medium text-amber-700 dark:text-amber-400">
-                      ⏳ คำขอเยอะเกินไป
-                    </p>
+                    <p className="font-medium text-amber-700 dark:text-amber-400">⏳ คำขอเยอะเกินไป</p>
                     {rateLimitCountdown !== null ? (
                       <>
                         <p className="mt-0.5 text-amber-600 dark:text-amber-500">
-                          กำลัง retry อัตโนมัติใน{" "}
+                          retry อัตโนมัติใน{" "}
                           <span className="font-mono font-bold">{rateLimitCountdown}</span> วินาที
                         </p>
                         <button
@@ -227,7 +232,7 @@ export default function FaqChatbot() {
                           className="mt-2 flex items-center gap-1 text-xs font-medium text-amber-700 underline hover:no-underline dark:text-amber-400"
                         >
                           <RefreshCw className="h-3 w-3" />
-                          ลอง retry เดี๋ยวนี้
+                          retry เดี๋ยวนี้
                         </button>
                       </>
                     ) : (
@@ -304,8 +309,7 @@ export default function FaqChatbot() {
                 aria-label="ช่องพิมพ์คำถาม"
               />
               <Button
-                type="submit"
-                size="icon"
+                type="submit" size="icon"
                 disabled={isBlocked || !input.trim()}
                 aria-label="ส่งคำถาม"
                 className="rounded-xl"
@@ -313,7 +317,7 @@ export default function FaqChatbot() {
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : rateLimitCountdown !== null ? (
-                  <span className="text-xs font-mono font-bold">{rateLimitCountdown}</span>
+                  <span className="font-mono text-xs font-bold">{rateLimitCountdown}</span>
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
@@ -325,10 +329,9 @@ export default function FaqChatbot() {
 
       {/* Toggle button */}
       <Button
-        type="button"
-        size="icon"
+        type="button" size="icon"
         className="h-14 w-14 rounded-full shadow-lg transition-transform hover:scale-110"
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => setIsOpen((o) => !o)}
         aria-label={isOpen ? "ปิดแชท" : "เปิดแชท AI ผู้ช่วย"}
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
