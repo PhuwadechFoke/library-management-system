@@ -23,49 +23,17 @@ const SYSTEM_PROMPT = `คุณคือผู้ช่วย AI ของร�
 - ถ้าถามคำถามทั่วไป ตอบได้ตามปกติ เช่น คณิตศาสตร์ วิทยาศาสตร์ ประวัติศาสตร์ ฯลฯ
 - ไม่ต้องแนะนำตัวซ้ำทุกข้อความ`;
 
-/** ดึง retry delay จาก error details (วินาที) */
+/** ดึง retryDelay จาก Gemini error (วินาที) */
 function getRetryDelay(error) {
   try {
     const details = error?.errorDetails ?? [];
-    const retryInfo = details.find((d) =>
-      d["@type"]?.includes("RetryInfo")
-    );
+    const retryInfo = details.find((d) => d["@type"]?.includes("RetryInfo"));
     if (retryInfo?.retryDelay) {
       const seconds = parseInt(retryInfo.retryDelay, 10);
-      return isNaN(seconds) ? 20 : seconds;
+      return isNaN(seconds) ? 30 : seconds;
     }
   } catch {}
-  return 20;
-}
-
-/** ส่ง message ไปยัง Gemini พร้อม retry อัตโนมัติ 1 ครั้ง */
-async function sendWithRetry(model, history, userMessage, maxRetries = 1) {
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const chat = model.startChat({ history });
-      const result = await chat.sendMessage(userMessage.trim());
-      return result.response.text();
-    } catch (error) {
-      const status = error?.status ?? error?.response?.status;
-
-      // 429 — rate limited
-      if (status === 429) {
-        if (attempt < maxRetries) {
-          const delaySec = getRetryDelay(error);
-          console.log(`Rate limited. Retrying in ${delaySec}s…`);
-          await new Promise((r) => setTimeout(r, delaySec * 1000));
-          continue;
-        }
-        // หมด retry — โยน error พิเศษ
-        const delaySec = getRetryDelay(error);
-        const retryError = new Error("RATE_LIMITED");
-        retryError.retryAfter = delaySec;
-        throw retryError;
-      }
-
-      throw error;
-    }
-  }
+  return 30;
 }
 
 export async function POST(request) {
@@ -84,7 +52,7 @@ export async function POST(request) {
     }
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-3.5-flash-lite",
       systemInstruction: SYSTEM_PROMPT,
     });
 
@@ -96,18 +64,21 @@ export async function POST(request) {
         parts: [{ text: m.text }],
       }));
 
-    const responseText = await sendWithRetry(model, history, userMessage);
+    const chat = model.startChat({ history });
+    const result = await chat.sendMessage(userMessage.trim());
+    const responseText = result.response.text();
+
     return NextResponse.json({ reply: responseText });
   } catch (error) {
     console.error("Gemini API error:", error);
 
-    // Rate limit — แจ้งให้ frontend รู้ว่าต้องรออีกกี่วินาที
-    if (error.message === "RATE_LIMITED") {
+    // ตรวจจับ 429 Rate Limit — ส่งกลับทันที ไม่รอ retry ฝั่ง server
+    // (เพราะ Vercel function timeout < เวลาที่ต้องรอ)
+    const status = error?.status ?? error?.response?.status;
+    if (status === 429) {
+      const retryAfter = getRetryDelay(error);
       return NextResponse.json(
-        {
-          error: "RATE_LIMITED",
-          retryAfter: error.retryAfter ?? 20,
-        },
+        { error: "RATE_LIMITED", retryAfter },
         { status: 429 }
       );
     }
