@@ -12,23 +12,31 @@ export async function GET(request) {
       return NextResponse.json({ message: "ไม่มีโทเค็นยืนยันบัญชี" }, { status: 400 });
     }
 
-    // ค้นหาโดยใช้ token ที่รับมาจาก URL ตรงๆ
-    const user = await db.user.findFirst({
-      where: {
-        verificationToken: token, // ค้นหาค่าที่ตรงกับใน DB
-      },
+    // ค้นหาโดย token ก่อน
+    let user = await db.user.findFirst({
+      where: { verificationToken: token },
     });
 
+    // ถ้าหา user จาก token ไม่เจอ ให้เช็คว่าอาจจะยืนยันไปแล้วจากการเรียกซ้ำ (เช่น email scanner แอบกดก่อน)
     if (!user) {
+      const alreadyVerifiedUser = await db.user.findFirst({
+        where: { lastUsedVerificationToken: token, emailVerified: true },
+      });
+
+      if (alreadyVerifiedUser) {
+        return NextResponse.json({ message: "บัญชีนี้ยืนยันเรียบร้อยแล้ว คุณสามารถเข้าสู่ระบบได้ทันที" }, { status: 200 });
+      }
+
       return NextResponse.json({ message: "ไม่พบบัญชีหรือโทเค็นยืนยันไม่ถูกต้อง" }, { status: 404 });
     }
 
-    // อัปเดตสถานะเป็น true และลบ token ทิ้ง
+    // อัปเดตสถานะเป็น true, เก็บ token เดิมไว้ใน field แยกเพื่อเช็คซ้ำได้ (กัน error ตอนเรียกซ้ำ)
     await db.user.update({
       where: { id: user.id },
       data: {
-        emailVerified: true, // ตรงกับชื่อฟิลด์ใน schema.prisma
+        emailVerified: true,
         verificationToken: null,
+        lastUsedVerificationToken: token,
       },
     });
 

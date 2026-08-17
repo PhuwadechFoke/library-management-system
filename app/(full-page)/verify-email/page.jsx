@@ -13,16 +13,22 @@ export default function VerifyEmail() {
   const [message, setMessage] = useState("กำลังยืนยันบัญชี...");
 
   useEffect(() => {
+    let cancelled = false;
+
     const verifyEmail = async () => {
       if (!token) {
-        setStatus("idle");
-        setMessage("ไม่มีโทเค็นยืนยันบัญชีในลิงก์นี้ กรุณาตรวจสอบอีเมลอีกครั้งหรือสมัครใหม่");
+        if (!cancelled) {
+          setStatus("idle");
+          setMessage("ไม่มีโทเค็นยืนยันบัญชีในลิงก์นี้ กรุณาตรวจสอบอีเมลอีกครั้งหรือสมัครใหม่");
+        }
         return;
       }
 
       try {
         const response = await fetch(`/api/users/verify-email?token=${token}`);
         const result = await response.json();
+
+        if (cancelled) return; // ถ้า component ถูก unmount หรือ effect ถูกยกเลิกไปแล้ว ไม่ต้อง set state ซ้ำ
 
         if (!response.ok) {
           throw new Error(result.message || "ยืนยันบัญชีไม่สำเร็จ");
@@ -32,6 +38,7 @@ export default function VerifyEmail() {
         setMessage(result.message || "ยืนยันบัญชีสำเร็จ คุณสามารถเข้าสู่ระบบได้ทันที");
         toast.success("ยืนยันบัญชีสำเร็จ");
       } catch (error) {
+        if (cancelled) return;
         setStatus("error");
         setMessage(error.message || "ยืนยันบัญชีไม่สำเร็จ");
         toast.error(error.message || "ยืนยันบัญชีไม่สำเร็จ");
@@ -39,6 +46,10 @@ export default function VerifyEmail() {
     };
 
     verifyEmail();
+
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   return (
