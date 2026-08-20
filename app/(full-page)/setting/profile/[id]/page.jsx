@@ -12,6 +12,7 @@ import ImageInput from "@/components/formInputs/ImageInput";
 import { Button } from "@/components/ui/button";
 import SelectInput from "@/components/formInputs/SelectInput";
 import TextAreaInput from "@/components/formInputs/TextArealInput";
+import LibraryCardQR from "@/components/frontend/LibraryCardQR";
 import { getData } from "@/lib/getData";
 import { useDispatch } from "react-redux";
 import { queryClient } from "@/lib/react-query-client";
@@ -131,6 +132,9 @@ export default function SettingProfile({ params: { id } }) {
                 setImageUrl={setImageUrl}
                 endpoint="userProfileUploader"
               />
+              <div className="px-8 w-full sm:w-[500px] pb-8 flex justify-center">
+                <LibraryCardQR userProfile={userProfile} />
+              </div>
             </div>
           </div>
           <div className=" sm:col-span-6 bg-card overflow-hidden ">

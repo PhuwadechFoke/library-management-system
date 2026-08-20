@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import HamburgerMenu from "./HamburgerMenu";
 import { NavAvatar } from "./NavAvatar";
+import NotificationBell from "./NotificationBell";
 import SwitchTheme from "@/components/SwitchTheme";
 import { SparklesTextDemo } from "../SparklesTextDemo";
 import { CommandDialogDemo } from "../CommandDialogDemo";
@@ -24,7 +25,7 @@ export default async function Navbar({ className }) {
         <BookOpen width={26} height={26} className="text-custom-text" />
         <SparklesTextDemo text={"LMS"} />
       </Link>
-      <div className="text-3xl flex items-center justify-center gap-1 sm:gap-4">
+    <div className="text-3xl flex items-center justify-center gap-1 sm:gap-4">
         <CommandDialogDemo />
         <SwitchTheme customClass={"hidden sm:block"} />
         {!session ? (
@@ -32,7 +33,10 @@ export default async function Navbar({ className }) {
             <Button>Login</Button>
           </Link>
         ) : (
-          <NavAvatar session={session} />
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <NavAvatar session={session} />
+          </div>
         )}
       </div>
     </div>

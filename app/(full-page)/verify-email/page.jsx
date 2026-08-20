@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -11,6 +11,7 @@ export default function VerifyEmail() {
   const token = searchParams.get("token") ?? "";
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("กำลังยืนยันบัญชี...");
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -35,8 +36,15 @@ export default function VerifyEmail() {
         }
 
         setStatus("success");
-        setMessage(result.message || "ยืนยันบัญชีสำเร็จ คุณสามารถเข้าสู่ระบบได้ทันที");
+        setMessage(result.message || "ยืนยันบัญชีสำเร็จ กำลังพาคุณไปยังหน้าตั้งค่าโปรไฟล์...");
         toast.success("ยืนยันบัญชีสำเร็จ");
+
+        // Redirect ไปหน้าตั้งโปรไฟล์ (onboarding) หลังยืนยันสำเร็จ
+        if (result.userId) {
+          setTimeout(() => {
+            router.push(`/onboarding/${result.userId}`);
+          }, 1500);
+        }
       } catch (error) {
         if (cancelled) return;
         setStatus("error");

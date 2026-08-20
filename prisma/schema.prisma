@@ -26,10 +26,12 @@ model User {
   email             String? @unique
   password          String
   emailVerified     Boolean @default(false)
+  verificationToken String?
   lastUsedVerificationToken String?
 
   role        UserRole     @default(USER)
   userProfile UserProfile?
+  notifications Notification[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
@@ -231,4 +233,16 @@ model Reservation {
   user UserProfile @relation(fields: [userId], references: [userId])
 
   createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String?
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

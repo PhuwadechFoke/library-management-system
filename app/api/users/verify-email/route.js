@@ -24,7 +24,7 @@ export async function GET(request) {
       });
 
       if (alreadyVerifiedUser) {
-        return NextResponse.json({ message: "บัญชีนี้ยืนยันเรียบร้อยแล้ว คุณสามารถเข้าสู่ระบบได้ทันที" }, { status: 200 });
+        return NextResponse.json({ message: "บัญชีนี้ยืนยันเรียบร้อยแล้ว คุณสามารถเข้าสู่ระบบได้ทันที", userId: alreadyVerifiedUser.id }, { status: 200 });
       }
 
       return NextResponse.json({ message: "ไม่พบบัญชีหรือโทเค็นยืนยันไม่ถูกต้อง" }, { status: 404 });
@@ -40,7 +40,7 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json({ message: "ยืนยันบัญชีสำเร็จ" }, { status: 200 });
+    return NextResponse.json({ message: "ยืนยันบัญชีสำเร็จ", userId: user.id }, { status: 200 });
   } catch (error) {
     console.error("Verification error:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาดในการยืนยันบัญชี" }, { status: 500 });
