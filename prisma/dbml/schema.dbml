@@ -9,8 +9,10 @@ Table User {
   password String [not null]
   emailVerified Boolean [not null, default: false]
   verificationToken String
+  lastUsedVerificationToken String
   role UserRole [not null, default: 'USER']
   userProfile UserProfile
+  notifications Notification [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime
 }
@@ -94,6 +96,7 @@ Table Book {
   favoriteBy FavoriteBook [not null]
   reservations Reservation [not null]
   borrowings Borrow [not null]
+  orderItems BookOrderItem [not null]
   categoryId String [not null]
   category Category [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -173,6 +176,55 @@ Table Reservation {
   createdAt DateTime [default: `now()`, not null]
 }
 
+Table Notification {
+  id String [pk]
+  userId String [not null]
+  user User [not null]
+  title String [not null]
+  message String
+  isRead Boolean [not null, default: false]
+  link String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table BookOrder {
+  id String [pk]
+  orderNumber String [unique, not null]
+  status OrderStatus [not null, default: 'PENDING']
+  totalAmount Int [not null, default: 0]
+  note String
+  orderById String [not null]
+  supplierName String [not null, default: '']
+  supplierContact String
+  memberId String
+  items BookOrderItem [not null]
+  receipt BookReceipt
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table BookOrderItem {
+  id String [pk]
+  orderId String [not null]
+  order BookOrder [not null]
+  bookId String [not null]
+  book Book [not null]
+  quantity Int [not null]
+  unitPrice Int [not null]
+  totalPrice Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table BookReceipt {
+  id String [pk]
+  orderId String [unique, not null]
+  receivedById String [not null]
+  note String
+  receivedAt DateTime [default: `now()`, not null]
+  order BookOrder [not null]
+}
+
 Enum UserRole {
   ADMIN
   USER
@@ -199,6 +251,13 @@ Enum BorrowingStatus {
 Enum BorrowReminderType {
   DUE_TOMORROW
   OVERDUE
+}
+
+Enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
 }
 
 Ref: UserProfile.userId - User.id [delete: Cascade]
@@ -232,3 +291,11 @@ Ref: BorrowReminder.borrowId > Borrow.id [delete: Cascade]
 Ref: Reservation.bookId > Book.id
 
 Ref: Reservation.userId > UserProfile.userId
+
+Ref: Notification.userId > User.id [delete: Cascade]
+
+Ref: BookOrderItem.orderId > BookOrder.id [delete: Cascade]
+
+Ref: BookOrderItem.bookId > Book.id
+
+Ref: BookReceipt.orderId - BookOrder.id [delete: Cascade]

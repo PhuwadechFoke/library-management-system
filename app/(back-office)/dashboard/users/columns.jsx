@@ -42,4 +42,19 @@ export const columns = [
       <DateCreatedColumnCell row={row} accessorKey="createdAt" />
     ),
   },
+  {
+    header: "จัดการ",
+    id: "actions",
+    cell: ({ row }) => {
+      const user = row.original;
+      return (
+        <ActionColumn
+          row={row}
+          title="ผู้ใช้"
+          refreshQueryKey="users"
+          endpoint={`admin/users/${user.userId}`}
+        />
+      );
+    },
+  },
 ];

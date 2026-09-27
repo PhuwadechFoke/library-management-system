@@ -136,6 +136,7 @@ model Book {
   favoriteBy   FavoriteBook[]
   reservations Reservation[]
   borrowings   Borrow[]
+  orderItems   BookOrderItem[]
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
@@ -245,4 +246,53 @@ model Notification {
   link      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model BookOrder {
+  id          String      @id @default(uuid())
+  orderNumber String      @unique
+  status      OrderStatus @default(PENDING)
+  totalAmount Int         @default(0)
+  note        String?
+
+  orderById       String
+  supplierName    String @default("")
+  supplierContact String?
+  memberId        String?
+
+  items BookOrderItem[]
+  receipt BookReceipt?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BookOrderItem {
+  id         String    @id @default(uuid())
+  orderId    String
+  order      BookOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId     String
+  book       Book      @relation(fields: [bookId], references: [id])
+  quantity   Int
+  unitPrice  Int
+  totalPrice Int
+
+  createdAt DateTime @default(now())
+}
+
+model BookReceipt {
+  id           String   @id @default(uuid())
+  orderId      String   @unique
+  receivedById String
+  note         String?
+  receivedAt   DateTime @default(now())
+
+  order BookOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
