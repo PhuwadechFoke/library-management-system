@@ -11,7 +11,7 @@ import React from "react";
 export default function page() {
   const {
     data: totalQuantity,
-    isLoading:isTotalQuantityLoading,
+    isLoading: isTotalQuantityLoading,
     errorTotalQuantity,
   } = useQuery({
     queryKey: ["totalQuantity"],
@@ -19,7 +19,7 @@ export default function page() {
   });
   const {
     data: totalRemaining,
-    isLoading:isTotalRemainingLoading,
+    isLoading: isTotalRemainingLoading,
     errorRemaining,
   } = useQuery({
     queryKey: ["totalRemaining"],
@@ -27,21 +27,33 @@ export default function page() {
   });
   const {
     data: totalActiveBooks,
-    isLoading:isTotalActiveBooksLoading,
+    isLoading: isTotalActiveBooksLoading,
     errorTotalActiveBooks,
   } = useQuery({
     queryKey: ["totalActiveBooks"],
     queryFn: () => getData("admin/books/total-active"),
   });
+  const {
+    data: reservations,
+    isLoading: isReservationsLoading,
+  } = useQuery({
+    queryKey: ["admin_reservations_dashboard"],
+    queryFn: () => getData("admin/reservations"),
+  });
+
   const quantity = totalQuantity?.totalQuantity || 0;
   const remaining = totalRemaining?.totalRemaining || 0;
   const totalBooks = totalActiveBooks?.totalBooks || 0;
   const totalActive = totalActiveBooks?.totalActiveBooks || 0;
   const borrowCount = quantity - remaining || 0;
+  const pendingReservations = Array.isArray(reservations)
+    ? reservations.filter((r) => !r.isRead).length
+    : 0;
 
   if (errorTotalQuantity) return <div>{errorTotalQuantity.message}</div>;
   if (errorRemaining) return <div>{errorRemaining.message}</div>;
   if (errorTotalActiveBooks) return <div>{errorTotalActiveBooks.message}</div>;
+
   return (
     <div className="px-4 sm:px-0">
       <PageHeaderNoAdd loading={isTotalRemainingLoading} heading="Dashboard" />
@@ -50,6 +62,7 @@ export default function page() {
         {isTotalQuantityLoading ||
         isTotalRemainingLoading ||
         isTotalActiveBooksLoading ||
+        isReservationsLoading ||
         !totalQuantity ||
         !totalRemaining ||
         !totalActiveBooks ? (
@@ -62,6 +75,7 @@ export default function page() {
               totalBooks={totalBooks}
               totalActive={totalActive}
               borrowCount={borrowCount}
+              pendingReservations={pendingReservations}
             />
           </div>
         )}

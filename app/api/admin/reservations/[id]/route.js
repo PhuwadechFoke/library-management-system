@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
+import { createNotification } from "@/lib/notifications";
 
 // อัปเดตสถานะว่า admin อ่านแล้ว
 export async function PUT(request, { params: { id } }) {
@@ -22,7 +23,13 @@ export async function PUT(request, { params: { id } }) {
 // ยกเลิกการจอง (ลบ record + คืนจำนวนหนังสือ)
 export async function DELETE(request, { params: { id } }) {
   try {
-    const reservation = await db.reservation.findUnique({ where: { id } });
+    const reservation = await db.reservation.findUnique({
+      where: { id },
+      include: {
+        book: { select: { title: true } },
+        user: { include: { user: { select: { id: true } } } },
+      },
+    });
 
     if (!reservation) {
       return NextResponse.json({ message: "ไม่พบรายการจองนี้" }, { status: 404 });
@@ -36,6 +43,17 @@ export async function DELETE(request, { params: { id } }) {
 
       await tx.reservation.delete({ where: { id } });
     });
+
+    // ส่ง notification แจ้งเตือนผู้ใช้เมื่อถูกยกเลิกการจอง
+    const borrowerUserId = reservation.user?.user?.id;
+    if (borrowerUserId) {
+      await createNotification(db, {
+        userId: borrowerUserId,
+        title: "❌ การจองถูกยกเลิก",
+        message: `รายการจอง "${reservation.book?.title || 'หนังสือ'}" ถูกยกเลิกโดยเจ้าหน้าที่`,
+        link: "/books/my-books",
+      });
+    }
 
     return NextResponse.json({ message: "ยกเลิกการจองสำเร็จ" });
   } catch (error) {
