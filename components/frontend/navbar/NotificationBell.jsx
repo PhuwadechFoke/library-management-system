@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
+import { Bell, CheckCheck, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
 
@@ -54,7 +54,26 @@ export default function NotificationBell() {
     }
   };
 
+  const markAllAsRead = async () => {
+    try {
+      await fetch("/api/notifications", { method: "PATCH" });
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error("Error marking all as read:", error);
+    }
+  };
+
+  const deleteReadNotifications = async () => {
+    try {
+      await fetch("/api/notifications", { method: "DELETE" });
+      setNotifications((prev) => prev.filter((n) => !n.isRead));
+    } catch (error) {
+      console.error("Error deleting read notifications:", error);
+    }
+  };
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const hasRead = notifications.some((n) => n.isRead);
 
   return (
     <DropdownMenu>
@@ -69,9 +88,42 @@ export default function NotificationBell() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <div className="flex items-center justify-between px-4 py-2 font-semibold border-b">
-          <span>การแจ้งเตือน</span>
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-2 border-b">
+          <span className="font-semibold text-sm">การแจ้งเตือน</span>
+          <div className="flex gap-1">
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                title="อ่านทั้งหมด"
+                onClick={(e) => {
+                  e.preventDefault();
+                  markAllAsRead();
+                }}
+              >
+                <CheckCheck className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            )}
+            {hasRead && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                title="ลบที่อ่านแล้ว"
+                onClick={(e) => {
+                  e.preventDefault();
+                  deleteReadNotifications();
+                }}
+              >
+                <Trash2 className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Notification List */}
         <div className="max-h-80 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
@@ -79,7 +131,7 @@ export default function NotificationBell() {
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
-              ไม่มีการแจ้งเตือนใหม่
+              ไม่มีการแจ้งเตือน
             </div>
           ) : (
             notifications.map((notification) => (
@@ -90,7 +142,6 @@ export default function NotificationBell() {
                 }`}
                 onClick={() => {
                   if (!notification.isRead) markAsRead(notification.id);
-                  // ถ้ามี link ค่อยให้มันไปต่อ แต่ถ้าไม่มีก็เป็นแค่ให้อ่าน
                   if (notification.link) {
                     window.location.href = notification.link;
                   }

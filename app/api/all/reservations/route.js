@@ -1,6 +1,7 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { canReserveBook } from "@/lib/reservationValidation.mjs";
+import { createNotification } from "@/lib/notifications";
 
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
@@ -51,9 +52,24 @@ export async function POST(request) {
       return { reservation, updatedBook };
     });
 
+    // ดึง userId จาก UserProfile เพื่อส่ง notification
+    const userProfile = await db.userProfile.findUnique({
+      where: { userId },
+      select: { userId: true, user: { select: { id: true } } },
+    });
+
+    if (userProfile?.user?.id) {
+      await createNotification(db, {
+        userId: userProfile.user.id,
+        title: `จองหนังสือสำเร็จ`,
+        message: `คุณได้จอง "${book.title}" เรียบร้อยแล้ว กรุณารอการยืนยันจากเจ้าหน้าที่`,
+        link: "/books/my-books",
+      });
+    }
+
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาดในการจองหนังสือ" }, { status: 500 });
   }
-}
+}

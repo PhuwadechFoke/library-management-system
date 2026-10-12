@@ -26,3 +26,48 @@ export async function GET(request) {
     );
   }
 }
+
+// PATCH /api/notifications  → mark all as read
+export async function PATCH(request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    await db.notification.updateMany({
+      where: { userId: session.user.id, isRead: false },
+      data: { isRead: true },
+    });
+
+    return NextResponse.json({ message: "อ่านทั้งหมดแล้ว" });
+  } catch (error) {
+    console.error("Failed to mark all as read:", error);
+    return NextResponse.json(
+      { message: "เกิดข้อผิดพลาดในการอัปเดต" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/notifications  → ลบ notification ที่อ่านแล้วทั้งหมด
+export async function DELETE(request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    await db.notification.deleteMany({
+      where: { userId: session.user.id, isRead: true },
+    });
+
+    return NextResponse.json({ message: "ลบการแจ้งเตือนที่อ่านแล้วเรียบร้อย" });
+  } catch (error) {
+    console.error("Failed to delete read notifications:", error);
+    return NextResponse.json(
+      { message: "เกิดข้อผิดพลาดในการลบ" },
+      { status: 500 }
+    );
+  }
+}

@@ -1,6 +1,7 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { sendReservationReadyNotification } from "@/lib/borrow-reminders";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(request, { params: { id } }) {
   try {
@@ -10,7 +11,7 @@ export async function POST(request, { params: { id } }) {
       where: { id },
       include: {
         book: true,
-        user: { include: { user: { select: { email: true } } } },
+        user: { include: { user: { select: { id: true, email: true } } } },
       },
     });
 
@@ -49,6 +50,17 @@ export async function POST(request, { params: { id } }) {
 
       return borrow;
     });
+
+    // ส่ง in-app notification ให้ผู้ยืม
+    const borrowerUserId = reservation.user?.user?.id;
+    if (borrowerUserId) {
+      await createNotification(db, {
+        userId: borrowerUserId,
+        title: `✅ อนุมัติการยืมหนังสือแล้ว`,
+        message: `"${reservation.book.title}" ได้รับการอนุมัติแล้ว กำหนดคืนวันที่ ${dueDate.toLocaleDateString("th-TH", { dateStyle: "long" })}`,
+        link: "/books/my-books",
+      });
+    }
 
     let emailSent = false;
     try {

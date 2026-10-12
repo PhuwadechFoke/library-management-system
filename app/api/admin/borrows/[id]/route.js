@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
+import { createNotification } from "@/lib/notifications";
 
 // GET สำหรับดึงข้อมูลการยืม 1 รายการ
 export async function GET(request, { params: { id } }) {
@@ -54,7 +55,11 @@ export async function PUT(request, { params: { id } }) {
 
     // [Backend Validation] ดึงข้อมูลบันทึกการยืมปัจจุบัน
     const currentBorrow = await db.borrow.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        book: true,
+        borrower: { include: { user: { select: { id: true } } } },
+      },
     });
 
     if (!currentBorrow) {
@@ -62,13 +67,13 @@ export async function PUT(request, { params: { id } }) {
     }
 
     // ไม่ว่าจะเป็น RETURNED หรือ LOST ถือว่าทำรายการปิดยอดเคสนี้แล้ว
-    const nextIsReturned = status === "RETURNED" || status === "LOST"; 
+    const nextIsReturned = status === "RETURNED" || status === "LOST";
 
     // ค่าที่จะอัปเดตลงฐานข้อมูล
     const updateData = {
       returnApproverId,
       returnDate,
-      isReturned: nextIsReturned, 
+      isReturned: nextIsReturned,
       fine: parseInt(fine) || 0,
       damaged: parseInt(damaged) || 0,
       status,
@@ -94,7 +99,7 @@ export async function PUT(request, { params: { id } }) {
 
       const updateBook = await db.book.update({
         where: {
-          id: bookId || currentBorrow.bookId, 
+          id: bookId || currentBorrow.bookId,
         },
         data: {
           remaining: newRemaining,
@@ -102,6 +107,39 @@ export async function PUT(request, { params: { id } }) {
         },
       });
       console.log("Updated Book Stock:", updateBook);
+    }
+
+    // ส่ง in-app notification ให้ผู้ยืมเมื่อสถานะเปลี่ยน
+    const borrowerUserId = currentBorrow.borrower?.user?.id;
+    if (borrowerUserId && !currentBorrow.isReturned) {
+      let title = "";
+      let message = "";
+
+      if (status === "RETURNED") {
+        title = "✅ คืนหนังสือเรียบร้อยแล้ว";
+        message = `"${currentBorrow.book?.title}" ได้รับการยืนยันการคืนเรียบร้อยแล้ว`;
+        if (parseInt(fine) > 0) {
+          message += ` (ค่าปรับ: ${parseInt(fine).toLocaleString("th-TH")} บาท)`;
+        }
+      } else if (status === "OVERDUE") {
+        title = "⚠️ หนังสือเกินกำหนดคืน";
+        message = `"${currentBorrow.book?.title}" เกินกำหนดคืนแล้ว กรุณานำมาคืนห้องสมุดโดยเร็ว`;
+      } else if (status === "LOST") {
+        title = "📋 บันทึกหนังสือสูญหาย";
+        message = `"${currentBorrow.book?.title}" ถูกบันทึกว่าสูญหาย`;
+        if (parseInt(fine) > 0) {
+          message += ` (ค่าปรับ: ${parseInt(fine).toLocaleString("th-TH")} บาท)`;
+        }
+      }
+
+      if (title) {
+        await createNotification(db, {
+          userId: borrowerUserId,
+          title,
+          message,
+          link: "/books/my-books",
+        });
+      }
     }
 
     return NextResponse.json(updatedBorrow);

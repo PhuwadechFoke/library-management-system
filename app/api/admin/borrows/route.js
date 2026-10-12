@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
+import { createNotification } from "@/lib/notifications";
 
 // ตั้งค่า origin ของ frontend ที่อนุญาตให้เรียก API นี้ได้
 const corsHeaders = {
@@ -75,6 +76,15 @@ export async function POST(request) {
         userProfileId: approverId,
         bookId: borrowRecord.bookId,
       },
+    });
+
+    // ส่ง in-app notification ให้ผู้ยืม
+    // borrowerId คือ UserProfile.userId ซึ่งตรงกับ User.id ด้วย
+    await createNotification(db, {
+      userId: borrowerId,
+      title: `📚 อนุมัติการยืมหนังสือแล้ว`,
+      message: `"${book.title}" ได้รับการอนุมัติแล้ว กำหนดคืนวันที่ ${new Date(dueDate).toLocaleDateString("th-TH", { dateStyle: "long" })}`,
+      link: "/books/my-books",
     });
 
     console.log("CREATE_BORROW");
