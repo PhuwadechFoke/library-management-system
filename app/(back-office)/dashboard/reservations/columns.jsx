@@ -11,7 +11,7 @@ import { makeDeleteRequest, makePostRequest } from "@/lib/apiRequest";
 import { queryClient } from "@/lib/react-query-client";
 import { useDispatch } from "react-redux";
 import { useSession } from "next-auth/react";
-import { Trash2, CheckCircle } from "lucide-react";
+import { Trash2, CheckCircle, BookOpen } from "lucide-react";
 
 function ActionsCell({ row }) {
   const dispatch = useDispatch();
@@ -56,20 +56,20 @@ function ActionsCell({ row }) {
         <Button
           variant="default"
           size="sm"
-          className="bg-green-600 hover:bg-green-700"
+          className="bg-green-600 hover:bg-green-700 text-white"
           onClick={() => setShowConfirm(true)}
         >
           <CheckCircle className="w-4 h-4 mr-1" /> ยืนยันการยืม
         </Button>
         <Button variant="outline" size="sm" onClick={() => setShowCancel(true)}>
-          <Trash2 className="w-4 h-4 mr-1" /> ยกเลิก
+          <Trash2 className="w-4 h-4 mr-1 text-red-500" /> ยกเลิก
         </Button>
       </div>
 
       <ConfirmDialog
         open={showConfirm}
         title="ยืนยันการยืมหนังสือ"
-        description={`ยืนยันการยืม "${reservation.book?.title}" ให้ผู้จองนี้?`}
+        description={`ยืนยันการยืม "${reservation.bookTitle || reservation.book?.title}" ให้ผู้จองนี้?`}
         confirmText="ยืนยันการยืม"
         variant="default"
         onConfirm={handleConfirm}
@@ -79,7 +79,7 @@ function ActionsCell({ row }) {
       <ConfirmDialog
         open={showCancel}
         title="ยกเลิกการจอง"
-        description={`ยืนยันยกเลิกการจอง "${reservation.book?.title}" นี้?`}
+        description={`ยืนยันยกเลิกการจอง "${reservation.bookTitle || reservation.book?.title}" นี้?`}
         confirmText="ยกเลิกการจอง"
         variant="danger"
         onConfirm={handleCancel}
@@ -91,42 +91,41 @@ function ActionsCell({ row }) {
 
 export const columns = [
   {
-    accessorKey: "book.imageUrl",
+    accessorKey: "bookImageUrl",
     header: "รูปภาพ",
     cell: ({ row }) => {
-      const imageUrl = row.original.book?.imageUrl;
+      const imageUrl = row.original.bookImageUrl || row.original.book?.imageUrl;
       return imageUrl ? (
         <Image
           src={imageUrl}
-          alt={row.original.book?.title || "book"}
+          alt={row.original.bookTitle || "book"}
           width={60}
           height={60}
-          className="rounded-sm object-cover"
+          className="rounded-sm object-cover w-14 h-16"
         />
       ) : (
-        <div className="w-[60px] h-[60px] bg-muted rounded-sm" />
+        <div className="w-14 h-16 bg-muted rounded-sm flex items-center justify-center">
+          <BookOpen className="w-6 h-6 text-muted-foreground" />
+        </div>
       );
     },
   },
   {
-    accessorKey: "book.title",
+    accessorKey: "bookTitle",
     header: ({ column }) => (
       <TitleColumn column={column} title="ชื่อหนังสือ" className="-m-4 min-w-60" />
     ),
-    cell: ({ row }) => row.original.book?.title ?? "-",
+    cell: ({ row }) => row.original.bookTitle || row.original.book?.title || "-",
   },
   {
-    accessorKey: "user.fullName",
+    accessorKey: "borrowerName",
     header: ({ column }) => <TitleColumn column={column} title="ผู้จอง" />,
-    cell: ({ row }) => {
-      const user = row.original.user;
-      return `${user?.prefix ?? ""} ${user?.fullName ?? "ไม่ระบุ"}`.trim();
-    },
+    cell: ({ row }) => row.original.borrowerName || "-",
   },
   {
-    accessorKey: "user.phoneNumber",
+    accessorKey: "borrowerPhoneNumber",
     header: ({ column }) => <TitleColumn column={column} title="เบอร์โทร" />,
-    cell: ({ row }) => row.original.user?.phoneNumber ?? "-",
+    cell: ({ row }) => row.original.borrowerPhoneNumber || "-",
   },
   {
     accessorKey: "numberOfDays",
