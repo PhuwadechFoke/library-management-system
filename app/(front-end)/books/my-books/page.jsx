@@ -1,22 +1,29 @@
 "use client";
 import HeadTitleBreadcrumb from "@/components/frontend/HeadTitleBreadcrumb";
-import { Album, Clock, BookOpen } from "lucide-react";
+import { Album, Clock, BookOpen, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import DataTable from "@/components/backoffice/data-table-components/DataTable";
 import { getData } from "@/lib/getData";
 import { columns } from "./columns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 export default function page() {
   const { data: session, status } = useSession();
   const userId = session?.user?.id;
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const { data: borrows, isLoading: isBorrowsLoading } = useQuery({
     queryKey: ["borrows_my_books_borrower", userId],
@@ -39,6 +46,30 @@ export default function page() {
     }, 5000);
     return () => clearTimeout(timer);
   }, [userId]);
+
+  const handleCancelReservation = async () => {
+    if (!cancelTarget) return;
+    try {
+      setCancelling(true);
+      const res = await fetch(`/api/all/reservations/${cancelTarget.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast.success("ยกเลิกการจองเรียบร้อยแล้ว");
+        queryClient.invalidateQueries(["my_reservations", userId]);
+      } else {
+        const error = await res.json();
+        toast.error(error.message || "เกิดข้อผิดพลาดในการยกเลิก");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+    } finally {
+      setCancelling(false);
+      setCancelTarget(null);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -67,7 +98,7 @@ export default function page() {
             {reservations.map((reservation) => (
               <div
                 key={reservation.id}
-                className="flex gap-3 p-3 border rounded-sm bg-muted/30 hover:bg-muted/50 transition-colors"
+                className="flex gap-3 p-3 border rounded-sm bg-muted/30 hover:bg-muted/50 transition-colors relative group"
               >
                 {reservation.book?.imageUrl ? (
                   <Image
@@ -75,14 +106,14 @@ export default function page() {
                     width={60}
                     height={60}
                     alt={reservation.book.title || "Book"}
-                    className="rounded-sm object-cover w-14 h-16 flex-shrink-0"
+                    className="rounded-sm object-cover w-14 h-20 flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-14 h-16 bg-muted rounded-sm flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-20 bg-muted rounded-sm flex items-center justify-center flex-shrink-0">
                     <BookOpen className="w-6 h-6 text-muted-foreground" />
                   </div>
                 )}
-                <div className="min-w-0 flex flex-col justify-between">
+                <div className="min-w-0 flex flex-col justify-between flex-1">
                   <div>
                     <p className="font-semibold text-sm line-clamp-1">
                       {reservation.book?.title}
@@ -91,8 +122,8 @@ export default function page() {
                       ผู้แต่ง: {reservation.book?.author || "-"}
                     </p>
                   </div>
-                  <div className="mt-1">
-                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                  <div>
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium block">
                       ต้องการยืม {reservation.numberOfDays} วัน
                     </span>
                     <p className="text-[10px] text-muted-foreground">
@@ -102,6 +133,17 @@ export default function page() {
                         locale: th,
                       })}
                     </p>
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50 px-2"
+                      onClick={() => setCancelTarget(reservation)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1" />
+                      ยกเลิกการจอง
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -124,6 +166,17 @@ export default function page() {
           )}
         </div>
       </div>
+
+      {/* Dialog ยืนยันยกเลิกการจอง */}
+      <ConfirmDialog
+        open={!!cancelTarget}
+        title="ยืนยันการยกเลิกการจอง"
+        description={`คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการจองหนังสือ "${cancelTarget?.book?.title || 'นี้'}"?`}
+        confirmText={cancelling ? "กำลังยกเลิก..." : "ยืนยันยกเลิก"}
+        variant="danger"
+        onConfirm={handleCancelReservation}
+        onCancel={() => setCancelTarget(null)}
+      />
     </div>
   );
 }

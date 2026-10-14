@@ -1,40 +1,91 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Bell, CheckCheck, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
+import toast from "react-hot-toast";
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isFirstLoad = useRef(true);
+  const knownIdsRef = useRef(new Set());
 
   useEffect(() => {
     fetchNotifications();
-    // Poll every 1 minute
-    const interval = setInterval(fetchNotifications, 60000);
+
+    // Polling แบบ Realtime ทุก 8 วินาที
+    const interval = setInterval(() => {
+      fetchNotifications(true);
+    }, 8000);
+
     return () => clearInterval(interval);
   }, []);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (isBackground = false) => {
     try {
       const res = await fetch("/api/notifications");
       if (res.ok) {
         const data = await res.json();
-        setNotifications(data);
+        
+        // ถ้าเป็นการ fetch รอบหลังๆ แล้วเจอแจ้งเตือนใหม่ที่ยังไม่อ่าน ให้เด้ง Toast แจ้งเตือนแบบ Realtime
+        if (!isFirstLoad.current && Array.isArray(data)) {
+          const newUnreadItems = data.filter(
+            (item) => !item.isRead && !knownIdsRef.current.has(item.id)
+          );
+
+          if (newUnreadItems.length > 0) {
+            newUnreadItems.forEach((item) => {
+              toast(
+                (t) => (
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => {
+                      toast.dismiss(t.id);
+                      if (item.link) window.location.href = item.link;
+                    }}
+                  >
+                    <p className="font-semibold text-sm">{item.title}</p>
+                    {item.message && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                        {item.message}
+                      </p>
+                    )}
+                  </div>
+                ),
+                {
+                  icon: "🔔",
+                  duration: 5000,
+                  position: "top-right",
+                }
+              );
+            });
+          }
+        }
+
+        if (Array.isArray(data)) {
+          data.forEach((n) => knownIdsRef.current.add(n.id));
+        }
+
+        setNotifications(data || []);
+        if (isFirstLoad.current) {
+          isFirstLoad.current = false;
+        }
       }
     } catch (error) {
       console.error("Error fetching notifications:", error);
     } finally {
-      setLoading(false);
+      if (!isBackground) {
+        setLoading(false);
+      }
     }
   };
 
@@ -43,7 +94,6 @@ export default function NotificationBell() {
       await fetch(`/api/notifications/${id}`, {
         method: "PATCH",
       });
-      // Update local state to feel instant
       setNotifications((prev) =>
         prev.map((notif) =>
           notif.id === id ? { ...notif, isRead: true } : notif
@@ -81,7 +131,7 @@ export default function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+            <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

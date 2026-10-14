@@ -1,10 +1,12 @@
 "use client";
+import React from "react";
 import PageHeader from "@/components/backoffice/PageHeader";
 import DataTable from "@/components/backoffice/data-table-components/DataTable";
 import { getData } from "@/lib/getData";
 import { columns } from "./columns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
+import ExportReportButton from "@/components/backoffice/ExportReportButton";
 
 const Page = () => {
   const { data: orders, isLoading: isOrdersLoading } = useQuery({
@@ -12,21 +14,49 @@ const Page = () => {
     queryFn: () => getData("admin/orders"),
   });
 
+  const headers = [
+    "เลขที่คำสั่งซื้อ",
+    "ร้านค้า/ผู้จัดจำหน่าย",
+    "จำนวนรายการ",
+    "ยอดรวม (บาท)",
+    "สถานะ",
+    "วันที่สร้าง",
+  ];
+
+  const rowMapper = (item, index, { formatDate, statusMap }) => [
+    item.orderNumber || "-",
+    item.supplierName || "-",
+    item.items?.length || 0,
+    item.totalAmount || 0,
+    statusMap[item.status] || item.status || "-",
+    formatDate(item.createdAt),
+  ];
+
   return (
     <div>
       {/* Header */}
-      <PageHeader
-        loading={isOrdersLoading}
-        heading="รายการสั่งซื้อหนังสือ"
-        linkTitle="เพิ่มคำสั่งซื้อ"
-        href="/dashboard/orders/new"
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <PageHeader
+          loading={isOrdersLoading}
+          heading="รายการสั่งซื้อหนังสือ"
+          linkTitle="เพิ่มคำสั่งซื้อ"
+          href="/dashboard/orders/new"
+        />
+        <div className="pb-2 self-end sm:self-auto">
+          <ExportReportButton
+            data={orders || []}
+            headers={headers}
+            rowMapper={rowMapper}
+            filenamePrefix="รายงานการสั่งซื้อหนังสือ"
+          />
+        </div>
+      </div>
       <div className="py-2">
         {isOrdersLoading ? (
           <Skeleton className="w-full h-96 mb-2 " />
         ) : (
           <DataTable
-            data={orders}
+            data={orders || []}
             columns={columns}
             filterKeys={["orderNumber", "status"]}
           />

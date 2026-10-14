@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-function exportToCSV(data, filename = "borrow-report.csv") {
+function exportToCSV(data, customHeaders, rowMapper, filename = "report.csv") {
   if (!data || data.length === 0) return;
 
   const formatDate = (dateStr) => {
@@ -31,9 +31,14 @@ function exportToCSV(data, filename = "borrow-report.csv") {
     RETURNED: "ส่งคืนแล้ว",
     OVERDUE: "เกินกำหนด",
     LOST: "สูญหาย",
+    PENDING: "รอดำเนินการ",
+    CONFIRMED: "ยืนยันแล้ว",
+    COMPLETED: "เสร็จสิ้น",
+    CANCELLED: "ยกเลิกแล้ว",
   };
 
-  const headers = [
+  // ถ้ามี headers และ rowMapper ส่งมา ให้ใช้ตามนั้น
+  const headers = customHeaders || [
     "ชื่อผู้ยืม",
     "รหัสนักศึกษา/บุคลากร",
     "เบอร์โทรศัพท์",
@@ -49,21 +54,26 @@ function exportToCSV(data, filename = "borrow-report.csv") {
     "ผู้อนุมัติการยืม",
   ];
 
-  const rows = data.map((item) => [
-    item.borrowerName || "-",
-    item.borrowerCodeNumber || "-",
-    item.borrowerPhoneNumber || "-",
-    item.bookTitle || "-",
-    formatDate(item.borrowDate),
-    formatDate(item.dueDate),
-    formatDate(item.returnDate),
-    item.numberOfDays || 0,
-    statusMap[item.status] || item.status || "-",
-    item.isReturned ? "ใช่" : "ไม่",
-    item.fine || 0,
-    item.damaged || 0,
-    item.approverName || "-",
-  ]);
+  const rows = data.map((item, index) => {
+    if (rowMapper) {
+      return rowMapper(item, index, { formatDate, statusMap });
+    }
+    return [
+      item.borrowerName || "-",
+      item.borrowerCodeNumber || "-",
+      item.borrowerPhoneNumber || "-",
+      item.bookTitle || "-",
+      formatDate(item.borrowDate),
+      formatDate(item.dueDate),
+      formatDate(item.returnDate),
+      item.numberOfDays || 0,
+      statusMap[item.status] || item.status || "-",
+      item.isReturned ? "ใช่" : "ไม่",
+      item.fine || 0,
+      item.damaged || 0,
+      item.approverName || "-",
+    ];
+  });
 
   // UTF-8 BOM สำหรับเปิดใน Excel ภาษาไทยไม่เป็นภาษาต่างดาว
   const BOM = "\uFEFF";
@@ -73,7 +83,7 @@ function exportToCSV(data, filename = "borrow-report.csv") {
       .map((row) =>
         row
           .map((cell) => {
-            const str = String(cell);
+            const str = String(cell ?? "");
             if (str.includes(",") || str.includes('"') || str.includes("\n")) {
               return `"${str.replace(/"/g, '""')}"`;
             }
@@ -94,7 +104,12 @@ function exportToCSV(data, filename = "borrow-report.csv") {
   URL.revokeObjectURL(url);
 }
 
-export default function ExportReportButton({ data, filenamePrefix = "รายงานการยืมคืน" }) {
+export default function ExportReportButton({
+  data,
+  headers,
+  rowMapper,
+  filenamePrefix = "รายงาน",
+}) {
   const today = new Date()
     .toLocaleDateString("th-TH", {
       year: "numeric",
@@ -104,7 +119,7 @@ export default function ExportReportButton({ data, filenamePrefix = "ราย�
     .replace(/\//g, "-");
 
   const handleExportCSV = () => {
-    exportToCSV(data, `${filenamePrefix}_${today}.csv`);
+    exportToCSV(data, headers, rowMapper, `${filenamePrefix}_${today}.csv`);
   };
 
   const handlePrint = () => {
