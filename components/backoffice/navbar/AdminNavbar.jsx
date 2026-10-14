@@ -7,6 +7,7 @@ import { Button } from "../../ui/button";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { NavAvatar } from "@/components/frontend/navbar/NavAvatar";
+import NotificationBell from "@/components/frontend/navbar/NotificationBell";
 import AdminHamburgerMenu from "./AdminHamburgerMenu";
 import SwitchTheme from "@/components/SwitchTheme";
 
@@ -32,7 +33,10 @@ export default async function AdminNavbar({ className }) {
             <Button>Login</Button>
           </Link>
         ) : (
-          <NavAvatar session={session} />
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <NavAvatar session={session} />
+          </div>
         )}
       </div>
     </div>

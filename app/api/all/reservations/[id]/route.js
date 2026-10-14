@@ -2,7 +2,7 @@ import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
-import { createNotification } from "@/lib/notifications";
+import { createNotification, notifyAdmins } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +17,7 @@ export async function DELETE(request, { params: { id } }) {
       where: { id },
       include: {
         book: { select: { title: true } },
+        user: { select: { fullName: true, username: true } },
       },
     });
 
@@ -39,12 +40,20 @@ export async function DELETE(request, { params: { id } }) {
       await tx.reservation.delete({ where: { id } });
     });
 
-    // แจ้งเตือนยืนยันไปยังผู้ใช้
+    // 1. แจ้งเตือนยืนยันไปยังผู้ใช้
     await createNotification(db, {
       userId: session.user.id,
       title: "ยกเลิกการจองเรียบร้อย",
       message: `คุณได้ยกเลิกการจอง "${reservation.book?.title || 'หนังสือ'}" เรียบร้อยแล้ว`,
       link: "/books/my-books",
+    });
+
+    // 2. แจ้งเตือนแอดมินว่าผู้ใช้ยกเลิกการจองเอง
+    const userName = reservation.user?.fullName || reservation.user?.username || "สมาชิก";
+    await notifyAdmins(db, {
+      title: "ผู้ใช้ยกเลิกการจองหนังสือ",
+      message: `${userName} ได้ยกเลิกการจอง "${reservation.book?.title || 'หนังสือ'}" แล้ว สต็อกคืนเข้าชั้นเรียบร้อย`,
+      link: "/dashboard/reservations",
     });
 
     return NextResponse.json({ message: "ยกเลิกการจองสำเร็จ" });

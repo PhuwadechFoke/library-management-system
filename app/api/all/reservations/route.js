@@ -1,7 +1,7 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { canReserveBook } from "@/lib/reservationValidation.mjs";
-import { createNotification } from "@/lib/notifications";
+import { createNotification, notifyAdmins } from "@/lib/notifications";
 
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
@@ -52,12 +52,21 @@ export async function POST(request) {
       return { reservation, updatedBook };
     });
 
-    // ดึง userId จาก UserProfile เพื่อส่ง notification
+    // ดึงข้อมูล UserProfile ของผู้จอง
     const userProfile = await db.userProfile.findUnique({
       where: { userId },
-      select: { userId: true, user: { select: { id: true } } },
+      select: {
+        userId: true,
+        fullName: true,
+        username: true,
+        user: { select: { id: true } },
+      },
     });
 
+    const borrowerDisplayName =
+      userProfile?.fullName || userProfile?.username || "สมาชิก";
+
+    // 1. ส่ง notification ให้ผู้จอง (User)
     if (userProfile?.user?.id) {
       await createNotification(db, {
         userId: userProfile.user.id,
@@ -67,9 +76,16 @@ export async function POST(request) {
       });
     }
 
+    // 2. ส่ง realtime notification ให้แอดมินทุกคน (Admins)
+    await notifyAdmins(db, {
+      title: `📖 มีรายการจองหนังสือใหม่!`,
+      message: `${borrowerDisplayName} ได้ทำการจอง "${book.title}" (${numberOfDays || 3} วัน)`,
+      link: "/dashboard/reservations",
+    });
+
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาดในการจองหนังสือ" }, { status: 500 });
   }
-}
+}
