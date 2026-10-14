@@ -41,18 +41,16 @@ const Page = () => {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <PageHeaderNoAdd loading={isLoading} heading="ข้อมูลผู้ใช้งาน" />
-        <div className="pb-2 self-end sm:self-auto">
-          <ExportReportButton
-            data={users || []}
-            headers={headers}
-            rowMapper={rowMapper}
-            filenamePrefix="รายงานข้อมูลสมาชิก"
-          />
-        </div>
-      </div>
+      {/* Header พร้อมปุ่มออกรายงานในกล่อง Header เดียวกัน */}
+      <PageHeaderNoAdd loading={isLoading} heading="ข้อมูลผู้ใช้งาน">
+        <ExportReportButton
+          data={users || []}
+          headers={headers}
+          rowMapper={rowMapper}
+          filenamePrefix="รายงานข้อมูลสมาชิก"
+        />
+      </PageHeaderNoAdd>
+
       <div className="py-2">
         {isLoading ? (
           <Skeleton className="w-full h-96 mb-2 " />

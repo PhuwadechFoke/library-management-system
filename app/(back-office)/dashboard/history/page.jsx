@@ -34,16 +34,13 @@ export default function Page() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <PageHeaderNoAdd loading={isBorrowsLoading} heading="ประวัติการยืมหนังสือ" />
-        <div className="pb-2">
-          <ExportReportButton
-            data={filteredBorrows}
-            filenamePrefix="รายงานการยืม"
-          />
-        </div>
-      </div>
+      {/* Header พร้อมปุ่มออกรายงานในกล่องเดียวกัน */}
+      <PageHeaderNoAdd loading={isBorrowsLoading} heading="ประวัติการยืมหนังสือ">
+        <ExportReportButton
+          data={filteredBorrows}
+          filenamePrefix="รายงานการยืม"
+        />
+      </PageHeaderNoAdd>
 
       {/* Status filter buttons */}
       <div className="flex flex-wrap gap-2 mb-3">

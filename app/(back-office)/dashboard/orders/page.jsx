@@ -34,23 +34,21 @@ const Page = () => {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <PageHeader
-          loading={isOrdersLoading}
-          heading="รายการสั่งซื้อหนังสือ"
-          linkTitle="เพิ่มคำสั่งซื้อ"
-          href="/dashboard/orders/new"
+      {/* Header พร้อมปุ่มออกรายงานและปุ่มเพิ่มคำสั่งซื้ออยู่ข้างๆ กัน */}
+      <PageHeader
+        loading={isOrdersLoading}
+        heading="รายการสั่งซื้อหนังสือ"
+        linkTitle="เพิ่มคำสั่งซื้อ"
+        href="/dashboard/orders/new"
+      >
+        <ExportReportButton
+          data={orders || []}
+          headers={headers}
+          rowMapper={rowMapper}
+          filenamePrefix="รายงานการสั่งซื้อหนังสือ"
         />
-        <div className="pb-2 self-end sm:self-auto">
-          <ExportReportButton
-            data={orders || []}
-            headers={headers}
-            rowMapper={rowMapper}
-            filenamePrefix="รายงานการสั่งซื้อหนังสือ"
-          />
-        </div>
-      </div>
+      </PageHeader>
+
       <div className="py-2">
         {isOrdersLoading ? (
           <Skeleton className="w-full h-96 mb-2 " />
