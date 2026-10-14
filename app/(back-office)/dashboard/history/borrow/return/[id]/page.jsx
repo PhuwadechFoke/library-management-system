@@ -2,18 +2,22 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/lib/getData";
 import { useQuery } from "@tanstack/react-query";
-import { Bold, Images, X } from "lucide-react";
+import { Bold, Images, X, Receipt } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import moment from "moment";
 import "moment/locale/th";
 import { FINE_RATE } from "@/lib/constants";
 import { Label } from "@radix-ui/react-label";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import FineReceiptModal from "@/components/backoffice/FineReceiptModal";
 moment.locale("th");
 
 export default function Page({ params: { id } }) {
   const router = useRouter();
+  const [showReceipt, setShowReceipt] = useState(false);
+
   const {
     data: borrow,
     isLoading: isBorrowLoading,
@@ -34,7 +38,7 @@ export default function Page({ params: { id } }) {
     );
   }
 
-  // --- คำนวณวันเกินกำหนด: ถ้าคืนแล้วใช้วันที่คืนจริง ถ้ายังไม่คืนใช้วันนี้ (คำนวณสด) ---
+  // --- คำนวณวันเกินกำหนด: ถ้าคืนแล้วใช้วันที่คืนจริง ถ้ายังไม่คืนใช้วันนี้ ---
   let overdueDays = 0;
   if (borrow?.dueDate) {
     const dueTime = new Date(borrow.dueDate).setHours(0, 0, 0, 0);
@@ -50,22 +54,34 @@ export default function Page({ params: { id } }) {
 
   const currentFineRate = FINE_RATE?.DAY ?? 0;
   const fineAmount = borrow?.book?.price ? Math.round(borrow.book.price * currentFineRate) : 0;
-
-  // ค่าปรับที่คำนวณสด (สำหรับตอนยังไม่คืน) เทียบกับค่าปรับจริงที่บันทึกแล้ว (ตอนคืนแล้ว)
-  const liveFine = overdueDays * fineAmount;
-  const displayFine = borrow?.isReturned ? (borrow?.fine ?? 0) : liveFine + (borrow?.damaged ?? 0);
+  const overdueFine = overdueDays * fineAmount;
+  const damagedFine = borrow?.damaged ?? 0;
+  const totalFine = borrow?.isReturned ? (borrow?.fine ?? 0) : overdueFine + damagedFine;
 
   return (
     <div>
       <div className="">
         <div className="flex justify-between items-center py-4 sm:py-6 px-6 border rounded-sm sm:px-12 mb-2 ">
           <h2 className=" text-xl font-semibold">รายละเอียดการคืนหนังสือ</h2>
-          <button
-            className=" hover:text-red-500 transition-all"
-            onClick={() => router.back()}
-          >
-            <X />
-          </button>
+          <div className="flex items-center gap-2">
+            {totalFine > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowReceipt(true)}
+                className="flex items-center gap-1.5"
+              >
+                <Receipt className="w-4 h-4 text-primary" />
+                <span>ดูใบเสร็จค่าปรับ</span>
+              </Button>
+            )}
+            <button
+              className=" hover:text-red-500 transition-all p-1"
+              onClick={() => router.back()}
+            >
+              <X />
+            </button>
+          </div>
         </div>
         <div className="grid sm:grid-cols-12 gap-2 sm:gap-5">
           <div className="sm:col-span-8 py-4 sm:py-6 px-6 border rounded-sm">
@@ -183,9 +199,9 @@ export default function Page({ params: { id } }) {
                   <span>{fineAmount.toLocaleString()}</span> บาท / วัน
                 </p>
                 <p className="flex items-center">
-                  <strong>ค่าเสียหายเพิ่มเติม : </strong>
+                  <strong>ค่าเสียหายเพิ่มเติม / สูญหาย : </strong>
                   <span className="text-red-800 dark:text-red-500 font-bold mx-2">
-                    {(borrow?.damaged ?? 0).toLocaleString()}
+                    {damagedFine.toLocaleString()}
                   </span>
                   บาท
                 </p>
@@ -193,14 +209,9 @@ export default function Page({ params: { id } }) {
                 <p>
                   <strong>ค่าปรับรวมสุทธิ :</strong>
                   <span className="text-red-800 dark:text-red-500 font-bold text-lg mx-2">
-                    {displayFine.toLocaleString()}
+                    {totalFine.toLocaleString()}
                   </span>
                   บาท
-                  {!borrow?.isReturned && overdueDays > 0 && (
-                    <span className="text-xs text-muted-foreground ml-2">
-                      (ประมาณการ ณ วันนี้)
-                    </span>
-                  )}
                 </p>
               </div>
             </div>
@@ -300,6 +311,19 @@ export default function Page({ params: { id } }) {
           </div>
         </div>
       </div>
+
+      {/* บิลค่าปรับ FineReceiptModal */}
+      <FineReceiptModal
+        isOpen={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        borrow={borrow}
+        overdueFine={overdueFine}
+        damagedFine={damagedFine}
+        totalFine={totalFine}
+        overdueDays={overdueDays}
+        isLost={borrow?.status === "LOST"}
+        returnApproverName={borrow?.returnApprover?.fullName || borrow?.returnApprover?.username}
+      />
     </div>
   );
 }
