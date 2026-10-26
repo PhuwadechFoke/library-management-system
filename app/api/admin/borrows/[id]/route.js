@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
 
+// บังคับให้ Route นี้เป็น Dynamic เสมอเพื่อป้องกัน Error บน Vercel
+export const dynamic = 'force-dynamic';
+
 // GET สำหรับดึงข้อมูลการยืม 1 รายการ
 export async function GET(request, { params: { id } }) {
   try {
