@@ -1,6 +1,9 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 
+// 💡 เพิ่มบรรทัดนี้เพื่อบังคับให้เป็น Dynamic Route เสมอ ป้องกันปัญหาตอน Build บน Vercel
+export const dynamic = 'force-dynamic';
+
 // api/admin/borrows/monthly
 export async function GET(request) {
   try {
@@ -21,8 +24,6 @@ export async function GET(request) {
       },
     });
 
-    // console.log("Fetched borrows:", borrows); // Add this to see fetched data
-
     // Process and aggregate data by month
     const monthlyData = Array.from({ length: 12 }, (_, i) => ({
       month: new Date(0, i).toLocaleString('default', { month: 'short' }),
@@ -34,11 +35,9 @@ export async function GET(request) {
       monthlyData[monthIndex].count += 1;
     });
 
-    // console.log("Monthly data:", monthlyData); // Add this to see processed data
-
     return NextResponse.json(monthlyData);
   } catch (error) {
-    console.log("Error fetching data:", error); // Add this for error logging
+    console.log("Error fetching data:", error);
     return NextResponse.json(
       { message: "เกิดข้อผิดพลาดในการดึงข้อมูลการยืมรายเดือน", error },
       { status: 500 }
