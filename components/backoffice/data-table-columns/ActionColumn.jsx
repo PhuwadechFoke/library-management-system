@@ -25,7 +25,11 @@ export default function ActionColumn({ row, title, endpoint, editEndpoint,refres
         <DropdownMenuLabel>{title}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <DeleteBtn endpoint={endpoint} title={title} refreshQuery={refreshQueryKey}/>
+          <DeleteBtn
+            endpoint={endpoint}
+            title={title}
+            refreshQueryKey={refreshQueryKey}
+          />
         </DropdownMenuItem>
         <DropdownMenuItem>
           <EditBtn editEndpoint={editEndpoint} title={title} />

@@ -14,52 +14,42 @@ export default function DeleteBtn({ endpoint, title, refreshQueryKey }) {
   const router = useRouter();
   const dispatch = useDispatch();
   const onSuccess = () => {
-    queryClient.invalidateQueries([`${refreshQueryKey}`]);
+    if (refreshQueryKey) {
+      queryClient.invalidateQueries({ queryKey: [refreshQueryKey] });
+    }
     router.refresh();
   };
   async function handleDelete() {
     setLoading(true);
-    Swal.fire({
-      title: "คุณแน่ใจมั้ย??",
-      text: "คุณจะไม่สามารถย้อนกลับสิ่งนี้ได้!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "ใช่ ยืนยัน!",
-      cancelButtonText: "ยกเลิก",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        dispatch(isLoading(true));
-        const res = await fetch(`/api/${endpoint}`, {
-          method: "DELETE",
-        });
-        if (res.status === 409) {
-          const data = await res.json();
-          toast.error(data.message);
-          setLoading(false);
-          dispatch(isLoading(false));
-        }
-        if (res.status === 404) {
-          const data = await res.json();
-          toast.error(data.message);
-          setLoading(false);
-          dispatch(isLoading(false));
-        }
-        if (res.ok) {
-          onSuccess();
-          setLoading(false);
-          dispatch(isLoading(false));
-          // window.location.reload();
-          toast.success(`ลบ${title} สำเร็จ`);
-        }
-      } else {
-        dispatch(isLoading(false));
-        router.refresh();
-        setLoading(false);
-        toast.error(`ลบ${title} ไม่สำเร็จ`);
+    try {
+      const result = await Swal.fire({
+        title: "คุณแน่ใจมั้ย??",
+        text: "คุณจะไม่สามารถย้อนกลับสิ่งนี้ได้!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "ใช่ ยืนยัน!",
+        cancelButtonText: "ยกเลิก",
+      });
+
+      if (!result.isConfirmed) return;
+
+      dispatch(isLoading(true));
+      const response = await fetch(`/api/${endpoint}`, { method: "DELETE" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || `ลบ${title}ไม่สำเร็จ`);
       }
-    });
+
+      onSuccess();
+      toast.success(`ลบ${title} สำเร็จ`);
+    } catch (error) {
+      toast.error(error.message || `ลบ${title}ไม่สำเร็จ`);
+    } finally {
+      setLoading(false);
+      dispatch(isLoading(false));
+    }
   }
   return (
     <>
