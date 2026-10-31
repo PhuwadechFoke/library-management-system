@@ -9,6 +9,7 @@ export async function GET(request) {
       where: {
         user: {
           role: "USER", // เชื่อมโยงและกรอง role ของผู้ใช้
+          email: { not: null },
         },
       },
       orderBy: {

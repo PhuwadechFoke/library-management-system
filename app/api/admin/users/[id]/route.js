@@ -2,6 +2,7 @@ import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
+import { randomUUID } from "node:crypto";
 
 export async function GET(request, { params: { id } }) {
   try {
@@ -46,7 +47,7 @@ export async function DELETE(request, { params: { id } }) {
 
     const user = await db.user.findUnique({
       where: { id },
-      select: { id: true, role: true },
+      select: { id: true, role: true, email: true },
     });
     if (!user) {
       return NextResponse.json({ message: "ไม่พบผู้ใช้งานนี้" }, { status: 404 });
@@ -57,38 +58,33 @@ export async function DELETE(request, { params: { id } }) {
         { status: 409 }
       );
     }
-
-    const [borrow, activity] = await Promise.all([
-      db.borrow.findFirst({
-        where: {
-          OR: [
-            { borrowerId: id },
-            { approverId: id },
-            { returnApproverId: id },
-          ],
-        },
-        select: { id: true },
-      }),
-      db.activity.findFirst({
-        where: { userProfileId: id },
-        select: { id: true },
-      }),
-    ]);
-
-    if (borrow) {
+    if (user.email === null) {
       return NextResponse.json(
-        { message: "ไม่สามารถลบผู้ใช้นี้ได้ เนื่องจากมีประวัติการยืมหนังสือ" },
-        { status: 409 }
-      );
-    }
-    if (activity) {
-      return NextResponse.json(
-        { message: "ไม่สามารถลบผู้ใช้นี้ได้ เนื่องจากมีประวัติกิจกรรมในระบบ" },
+        { message: "บัญชีผู้ใช้นี้ถูกลบแล้ว" },
         { status: 409 }
       );
     }
 
+    let hasHistory = false;
     await db.$transaction(async (tx) => {
+      const [borrow, activity] = await Promise.all([
+        tx.borrow.findFirst({
+          where: {
+            OR: [
+              { borrowerId: id },
+              { approverId: id },
+              { returnApproverId: id },
+            ],
+          },
+          select: { id: true },
+        }),
+        tx.activity.findFirst({
+          where: { userProfileId: id },
+          select: { id: true },
+        }),
+      ]);
+      hasHistory = Boolean(borrow || activity);
+
       const reservations = await tx.reservation.groupBy({
         by: ["bookId"],
         where: { userId: id },
@@ -106,10 +102,47 @@ export async function DELETE(request, { params: { id } }) {
 
       await tx.reservation.deleteMany({ where: { userId: id } });
       await tx.favoriteBook.deleteMany({ where: { userId: id } });
-      await tx.user.delete({ where: { id } });
+
+      if (hasHistory) {
+        const anonymizedUsername = `deleted-${id.slice(0, 8)}`;
+
+        await tx.userProfile.update({
+          where: { userId: id },
+          data: {
+            username: anonymizedUsername,
+            emailAddress: `deleted-${id}@example.invalid`,
+            prefix: null,
+            fullName: "ผู้ใช้ที่ถูกลบ",
+            codeNumber: null,
+            phoneNumber: null,
+            educationLevel: null,
+            educationYear: null,
+            description: null,
+            profileImage: null,
+          },
+        });
+        await tx.notification.deleteMany({ where: { userId: id } });
+        await tx.user.update({
+          where: { id },
+          data: {
+            username: anonymizedUsername,
+            email: null,
+            password: randomUUID(),
+            emailVerified: false,
+            verificationToken: null,
+            lastUsedVerificationToken: null,
+          },
+        });
+      } else {
+        await tx.user.delete({ where: { id } });
+      }
     });
 
-    return NextResponse.json({ message: "ลบผู้ใช้งานสำเร็จ" });
+    return NextResponse.json({
+      message: hasHistory
+        ? "ลบข้อมูลส่วนตัวแล้ว และเก็บประวัติการยืมไว้"
+        : "ลบผู้ใช้งานสำเร็จ",
+    });
   } catch (error) {
     console.error("Failed to delete user:", error);
     return NextResponse.json(

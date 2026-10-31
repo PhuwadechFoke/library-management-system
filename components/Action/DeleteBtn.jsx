@@ -43,7 +43,7 @@ export default function DeleteBtn({ endpoint, title, refreshQueryKey }) {
       }
 
       onSuccess();
-      toast.success(`ลบ${title} สำเร็จ`);
+      toast.success(data.message || `ลบ${title} สำเร็จ`);
     } catch (error) {
       toast.error(error.message || `ลบ${title}ไม่สำเร็จ`);
     } finally {
