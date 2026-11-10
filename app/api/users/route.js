@@ -3,10 +3,12 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import base64url from "base64url";
 import { render } from "@react-email/render";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import EmailTemplate from "@/components/ui/email-template";
 import db from "@/lib/db";
 import { nameWebsite } from "@/lib/nameWebsite";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
@@ -64,35 +66,16 @@ export async function POST(request) {
 
     const redirectUrl = `/verify-email?token=${token}`;
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.NODEMAILER_USER,
-        pass: process.env.NODEMAILER_PASSWORD,
-      },
-    });
-
     const emailHtml = render(
       EmailTemplate({ name: username, redirectUrl, linkText, subject, description })
     );
 
-    const options = {
-      from: `${nameWebsite} <${process.env.NODEMAILER_USER}>`,
-      to: email,
+    // ส่งอีเมลผ่าน Resend แทน Nodemailer เพื่อไม่ให้เข้าสแปม
+    await resend.emails.send({
+      from: `${nameWebsite} <onboarding@resend.dev>`, // คำแนะนำ: เมื่อคุณ Verify โดเมนใน Resend แล้ว ให้เปลี่ยน onboarding@resend.dev เป็นโดเมนของคุณ เช่น noreply@yourdomain.com
+      to: [email],
       subject: subject,
       html: emailHtml,
-      headers: {},
-    };
-
-    await new Promise((resolve, reject) => {
-      transporter.sendMail(options, (err, info) => {
-        if (err) {
-          console.error(err);
-          reject(err);
-        } else {
-          resolve(info);
-        }
-      });
     });
 
     return NextResponse.json(

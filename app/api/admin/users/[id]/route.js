@@ -4,6 +4,112 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 import { randomUUID } from "node:crypto";
 
+export async function PUT(request, { params: { id } }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+    }
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ message: "ไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้งาน" }, { status: 403 });
+    }
+
+    const {
+      username,
+      emailAddress,
+      prefix,
+      fullName,
+      codeNumber,
+      phoneNumber,
+      educationLevel,
+      educationYear,
+      description,
+      profileImage,
+    } = await request.json();
+    const normalizedUsername = typeof username === "string" ? username.trim() : "";
+    const normalizedEmail = typeof emailAddress === "string" ? emailAddress.trim() : "";
+
+    if (!normalizedUsername || !normalizedEmail) {
+      return NextResponse.json(
+        { message: "กรุณาระบุชื่อผู้ใช้และอีเมล" },
+        { status: 400 }
+      );
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return NextResponse.json({ message: "รูปแบบอีเมลไม่ถูกต้อง" }, { status: 400 });
+    }
+
+    const existingProfile = await db.userProfile.findUnique({
+      where: { userId: id },
+      select: { userId: true },
+    });
+    if (!existingProfile) {
+      return NextResponse.json({ message: "ไม่พบผู้ใช้งานนี้" }, { status: 404 });
+    }
+
+    const emailOwner = await db.user.findFirst({
+      where: { email: normalizedEmail, id: { not: id } },
+      select: { id: true },
+    });
+    if (emailOwner) {
+      return NextResponse.json(
+        { message: "อีเมลนี้ถูกใช้งานแล้ว" },
+        { status: 409 }
+      );
+    }
+
+    const optionalProfileFields = {
+      prefix,
+      fullName,
+      codeNumber,
+      phoneNumber,
+      educationLevel,
+      educationYear,
+      description,
+      profileImage,
+    };
+    if (
+      Object.values(optionalProfileFields).some(
+        (value) => value !== undefined && value !== null && typeof value !== "string"
+      )
+    ) {
+      return NextResponse.json(
+        { message: "ข้อมูลผู้ใช้งานไม่ถูกต้อง" },
+        { status: 400 }
+      );
+    }
+
+    const updatedProfile = await db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id },
+        data: { username: normalizedUsername, email: normalizedEmail },
+      });
+      return tx.userProfile.update({
+        where: { userId: id },
+        data: {
+          username: normalizedUsername,
+          emailAddress: normalizedEmail,
+          ...optionalProfileFields,
+        },
+      });
+    });
+
+    return NextResponse.json(updatedProfile);
+  } catch (error) {
+    if (error?.code === "P2002") {
+      return NextResponse.json(
+        { message: "อีเมลหรือชื่อผู้ใช้นี้ถูกใช้งานแล้ว" },
+        { status: 409 }
+      );
+    }
+    console.error("Failed to update user:", error);
+    return NextResponse.json(
+      { message: "เกิดข้อผิดพลาดในการอัพเดทผู้ใช้งาน" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(request, { params: { id } }) {
   try {
     const userProfile = await db.userProfile.findUnique({

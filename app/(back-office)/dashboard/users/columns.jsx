@@ -53,6 +53,7 @@ export const columns = [
           title="ผู้ใช้"
           refreshQueryKey="users"
           endpoint={`admin/users/${user.userId}`}
+          editEndpoint={`users/update/${user.userId}`}
         />
       );
     },
