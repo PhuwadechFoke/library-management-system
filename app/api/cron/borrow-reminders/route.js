@@ -28,6 +28,7 @@ export async function GET(request) {
       isReturned: false,
       status: { notIn: ["RETURNED", "LOST"] },
       dueDate: { lt: bangkokDayStart(dayAfterTomorrow) },
+      borrower: { user: { email: { not: null } } },
     },
     include: {
       book: { select: { title: true } },

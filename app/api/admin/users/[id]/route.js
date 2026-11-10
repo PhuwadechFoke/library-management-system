@@ -210,28 +210,10 @@ export async function DELETE(request, { params: { id } }) {
       await tx.favoriteBook.deleteMany({ where: { userId: id } });
 
       if (hasHistory) {
-        const anonymizedUsername = `deleted-${id.slice(0, 8)}`;
-
-        await tx.userProfile.update({
-          where: { userId: id },
-          data: {
-            username: anonymizedUsername,
-            emailAddress: `deleted-${id}@example.invalid`,
-            prefix: null,
-            fullName: "ผู้ใช้ที่ถูกลบ",
-            codeNumber: null,
-            phoneNumber: null,
-            educationLevel: null,
-            educationYear: null,
-            description: null,
-            profileImage: null,
-          },
-        });
         await tx.notification.deleteMany({ where: { userId: id } });
         await tx.user.update({
           where: { id },
           data: {
-            username: anonymizedUsername,
             email: null,
             password: randomUUID(),
             emailVerified: false,
