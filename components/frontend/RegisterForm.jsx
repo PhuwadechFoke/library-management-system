@@ -17,10 +17,13 @@ export default function RegisterForm() {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors },
   } = useForm();
   const [loading, setLoading] = useState(false);
   const [emailErr, setEmailErr] = useState("");
+  const [canResendVerification, setCanResendVerification] = useState(false);
+  const [resending, setResending] = useState(false);
   const onSuccess = async () => {
     await queryClient.invalidateQueries(["admin/users/admin"]);
     await queryClient.invalidateQueries(["admin/users"]);
@@ -42,6 +45,7 @@ export default function RegisterForm() {
 
       if (response.ok) {
         setEmailErr("");
+        setCanResendVerification(false);
         setLoading(false);
         dispatch(isLoading(false));
         toast.success("สร้างบัญชีผู้ใช้สําเร็จ");
@@ -53,10 +57,11 @@ export default function RegisterForm() {
         dispatch(isLoading(false));
         if (response.status === 409) {
           setEmailErr("มีบัญชีในระบบแล้ว");
+          setCanResendVerification(true);
           toast.error("มีบัญชีในระบบแล้ว");
         } else {
           console.error("Server Error:", responseData.error || responseData);
-          toast.error("Oops Something Went wrong");
+          toast.error(responseData.message || "สมัครสมาชิกไม่สำเร็จ");
         }
       }
     } catch (error) {
@@ -66,6 +71,30 @@ export default function RegisterForm() {
       toast.error("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
     }
   }
+
+  async function resendVerificationEmail() {
+    const email = getValues("email");
+    try {
+      setResending(true);
+      const response = await fetch("/api/users/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        toast.error(responseData.message || "ส่งอีเมลยืนยันไม่สำเร็จ");
+        return;
+      }
+      toast.success(responseData.message);
+    } catch (error) {
+      console.error("Failed to request verification email:", error);
+      toast.error("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
+    } finally {
+      setResending(false);
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
       <TextInput
@@ -96,6 +125,16 @@ export default function RegisterForm() {
         <div className="text-sm text-red-600 dark:text-red-400 -mt-3 mb-2">
           {emailErr}
         </div>
+      )}
+      {canResendVerification && (
+        <button
+          type="button"
+          onClick={resendVerificationEmail}
+          disabled={resending}
+          className="text-sm text-primary underline disabled:opacity-50"
+        >
+          {resending ? "กำลังส่งอีเมล..." : "ส่งลิงก์ยืนยันอีกครั้ง"}
+        </button>
       )}
       <div className="w-full">
         <SubmitButton

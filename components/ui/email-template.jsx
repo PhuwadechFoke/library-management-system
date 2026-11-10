@@ -47,7 +47,14 @@ export const EmailTemplate = ({
             {description}
           </Text>
 
-          <Link style={button} href={`${baseUrl}${redirectUrl}`}>
+          <Link
+            style={button}
+            href={
+              redirectUrl.startsWith("http")
+                ? redirectUrl
+                : new URL(redirectUrl, baseUrl).toString()
+            }
+          >
             ยืนยัน
           </Link>
         </Section>
