@@ -122,6 +122,351 @@
   }
 }
 
+@keyframes auth-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes auth-float {
+  0%, 100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+@keyframes auth-orb-drift {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(14px, -18px, 0) scale(1.08);
+  }
+}
+
+.auth-shell {
+  animation: auth-fade-up 650ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.auth-content {
+  animation: auth-fade-up 800ms 100ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.auth-float {
+  animation: auth-float 6s ease-in-out infinite;
+}
+
+.auth-orb {
+  position: absolute;
+  width: 18rem;
+  height: 18rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 9999px;
+  animation: auth-orb-drift 9s ease-in-out infinite;
+}
+
+.auth-orb-one {
+  top: 8%;
+  right: -7rem;
+}
+
+.auth-orb-two {
+  bottom: 5%;
+  left: -9rem;
+  width: 24rem;
+  height: 24rem;
+  animation-delay: -3s;
+}
+
+.auth-input {
+  border-color: hsl(var(--border) / 0.8);
+  border-radius: 0.85rem;
+  background-color: hsl(var(--background) / 0.75);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.auth-input:focus-visible {
+  border-color: hsl(0 72% 42% / 0.6);
+  box-shadow: 0 0 0 4px hsl(0 72% 42% / 0.1);
+  transform: translateY(-1px);
+}
+
+.auth-submit {
+  box-shadow: 0 8px 18px hsl(0 72% 25% / 0.16);
+}
+
+.auth-submit:hover:not(:disabled) {
+  box-shadow: 0 12px 24px hsl(0 72% 25% / 0.24);
+  transform: translateY(-1px);
+}
+
+.auth-link {
+  text-underline-offset: 4px;
+  transition: color 180ms ease;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-shell,
+  .auth-content,
+  .auth-float,
+  .auth-orb {
+    animation: none;
+  }
+
+  .auth-input,
+  .auth-submit,
+  .auth-link {
+    transition: none;
+  }
+}
+
+.landing-hero {
+  animation: auth-fade-up 700ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.landing-grid {
+  background-image:
+    linear-gradient(rgb(120 81 35 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(120 81 35 / 0.035) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(to bottom, black, transparent 92%);
+}
+
+.dark .landing-grid {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+}
+
+.landing-glow {
+  width: 22rem;
+  height: 22rem;
+  border-radius: 9999px;
+  background: hsl(0 75% 45% / 0.12);
+  filter: blur(80px);
+  animation: auth-orb-drift 12s ease-in-out infinite;
+}
+
+.landing-glow-one {
+  top: -10rem;
+  right: 12%;
+}
+
+.landing-glow-two {
+  bottom: -14rem;
+  left: 18%;
+  background: hsl(38 90% 55% / 0.13);
+  animation-delay: -5s;
+}
+
+.landing-dot {
+  z-index: 1;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: hsl(0 72% 45% / 0.55);
+  box-shadow: 0 0 22px hsl(0 72% 45% / 0.5);
+  animation: auth-float 5s ease-in-out infinite;
+}
+
+.landing-dot-one {
+  top: 22%;
+  left: 48%;
+}
+
+.landing-dot-two {
+  top: 68%;
+  right: 6%;
+  width: 0.35rem;
+  height: 0.35rem;
+  animation-delay: -2s;
+}
+
+.landing-dot-three {
+  bottom: 12%;
+  left: 8%;
+  width: 0.3rem;
+  height: 0.3rem;
+  animation-delay: -3.5s;
+}
+
+.landing-copy > * {
+  animation: auth-fade-up 650ms both;
+}
+
+.landing-copy > :nth-child(1) { animation-delay: 80ms; }
+.landing-copy > :nth-child(2) { animation-delay: 150ms; }
+.landing-copy > :nth-child(3) { animation-delay: 230ms; }
+.landing-copy > :nth-child(4) { animation-delay: 300ms; }
+.landing-copy > :nth-child(5) { animation-delay: 380ms; }
+
+.landing-art-ring {
+  animation: landing-ring 18s linear infinite;
+}
+
+.landing-art-ring-inner {
+  animation-direction: reverse;
+  animation-duration: 24s;
+}
+
+.landing-illustration {
+  animation: auth-float 7s ease-in-out infinite;
+}
+
+.landing-float-card {
+  animation: auth-fade-up 700ms 450ms both, auth-float 6s 1.2s ease-in-out infinite;
+}
+
+.landing-float-card-bottom {
+  animation-delay: 600ms, 2s;
+}
+
+@keyframes landing-ring {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes admin-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-shell {
+  background-image:
+    radial-gradient(circle at 8% 0%, hsl(0 72% 45% / 0.075), transparent 25rem),
+    radial-gradient(circle at 100% 35%, hsl(38 90% 55% / 0.08), transparent 28rem);
+}
+
+.admin-navbar {
+  box-shadow: 0 1px 0 hsl(var(--border) / 0.65);
+}
+
+.admin-brand {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.admin-brand:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.admin-panel {
+  box-shadow: 0 24px 70px hsl(24 20% 20% / 0.08);
+  animation: admin-enter 450ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.admin-content > * {
+  animation: admin-enter 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.admin-sidebar {
+  background-image: linear-gradient(160deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.72));
+}
+
+.admin-sidebar-link {
+  position: relative;
+  isolation: isolate;
+}
+
+.admin-sidebar-link svg {
+  transition: transform 180ms ease;
+}
+
+.admin-sidebar-link:hover svg {
+  transform: scale(1.08);
+}
+
+.admin-page-header {
+  box-shadow: 0 8px 24px hsl(24 20% 20% / 0.045);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.admin-page-header:hover {
+  border-color: hsl(0 65% 45% / 0.24);
+  box-shadow: 0 12px 30px hsl(24 20% 20% / 0.075);
+}
+
+.admin-content [class*="text-card-foreground"] {
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.admin-content [class*="text-card-foreground"]:hover {
+  transform: translateY(-2px);
+  border-color: hsl(0 65% 45% / 0.2);
+  box-shadow: 0 12px 28px hsl(24 20% 20% / 0.08);
+}
+
+.admin-content :is(input, select, textarea):focus-visible {
+  outline: none;
+  border-color: hsl(0 65% 45% / 0.55);
+  box-shadow: 0 0 0 3px hsl(0 65% 45% / 0.11);
+}
+
+.admin-table > div:nth-child(2) {
+  box-shadow: 0 12px 32px hsl(24 20% 20% / 0.055);
+}
+
+.admin-table tbody tr {
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-table tbody tr:hover {
+  box-shadow: inset 3px 0 hsl(0 65% 45% / 0.6);
+}
+
+.admin-table thead {
+  background: linear-gradient(90deg, hsl(0 65% 45% / 0.055), hsl(38 90% 55% / 0.06));
+}
+
+.dark .admin-panel {
+  box-shadow: 0 24px 70px rgb(0 0 0 / 0.24);
+}
+
+.dark .admin-page-header:hover {
+  border-color: hsl(0 65% 65% / 0.26);
+}
+
+.dark .admin-content [class*="text-card-foreground"]:hover {
+  border-color: hsl(0 65% 65% / 0.22);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-panel,
+  .admin-content > * {
+    animation: none;
+  }
+
+  .admin-brand,
+  .admin-sidebar-link svg,
+  .admin-page-header,
+  .admin-content [class*="text-card-foreground"],
+  .admin-table tbody tr {
+    transition: none;
+  }
+
+  .admin-brand:hover,
+  .admin-content [class*="text-card-foreground"]:hover {
+    transform: none;
+  }
+}
+
 /* ===== Print Styles (ออกรายงาน PDF) ===== */
 @media print {
   /* ซ่อน navigation และ sidebar ตอนพิมพ์ */

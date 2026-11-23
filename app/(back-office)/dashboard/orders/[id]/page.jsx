@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { useDispatch } from "react-redux";
 import { isLoading } from "@/redux/slices/loadingFullScreenSlice";
+import LocalizedText from "@/components/frontend/LocalizedText";
 moment.locale("th");
 
 const statusMap = {
@@ -99,7 +100,7 @@ export default function Page({ params: { id } }) {
           {/* Header */}
           <div className="flex justify-between items-center py-4 sm:py-6 px-6 border rounded-sm sm:px-12 mb-2">
             <h2 className="text-xl font-semibold">
-              รายละเอียดคำสั่งซื้อ
+              <LocalizedText value="รายละเอียดคำสั่งซื้อ" />
             </h2>
             <button
               className="hover:text-red-500 transition-all"
@@ -113,7 +114,7 @@ export default function Page({ params: { id } }) {
             {/* ข้อมูลคำสั่งซื้อ */}
             <div className="sm:col-span-8 py-4 sm:py-6 px-6 border rounded-sm">
               <div className="text-lg font-semibold text-center mb-3">
-                ข้อมูลคำสั่งซื้อ
+                <LocalizedText value="ข้อมูลคำสั่งซื้อ" />
               </div>
               <div className="space-y-2">
                 <p>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
+import { getBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 // บังคับให้ Route นี้เป็น Dynamic เสมอเพื่อป้องกัน Error บน Vercel
 export const dynamic = 'force-dynamic';
@@ -94,20 +95,22 @@ export async function PUT(request, { params: { id } }) {
 
     // อัปเดตข้อมูลจำนวนหนังสือคืนเข้าชั้นสต็อก (+1) และอัปเดตสถานะอัตโนมัติ
     if (status === "RETURNED" && !currentBorrow.isReturned) {
-      const bookToUpdate = await db.book.findUnique({
-        where: { id: bookId || currentBorrow.bookId },
-      });
-
-      const newRemaining = (bookToUpdate?.remaining ?? 0) + 1;
-
-      const updateBook = await db.book.update({
-        where: {
-          id: bookId || currentBorrow.bookId,
-        },
-        data: {
-          remaining: newRemaining,
-          active: newRemaining > 0,
-        },
+      const bookIdToUpdate = bookId || currentBorrow.bookId;
+      const updateBook = await db.$transaction(async (tx) => {
+        const updatedBook = await tx.book.update({
+          where: { id: bookIdToUpdate },
+          data: { remaining: { increment: 1 } },
+        });
+        await tx.book.update({
+          where: { id: bookIdToUpdate },
+          data: { active: updatedBook.remaining > 0 },
+        });
+        return tx.book.update({
+          where: { id: bookIdToUpdate },
+          data: {
+            availabilityStatus: getBookAvailabilityStatus(updatedBook.remaining),
+          },
+        });
       });
       console.log("Updated Book Stock:", updateBook);
     }

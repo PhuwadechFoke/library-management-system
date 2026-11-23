@@ -8,20 +8,23 @@ import { store } from "@/redux/store";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query-client";
 import LoadingFullScreen from "@/components/LoadingFullScreen";
+import { LanguageProvider } from "@/context/LanguageContext";
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 export default function Providers({ children }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <Toaster position="top-center" reverseOrder={true} />
-      <SessionProvider>
-        <ReduxProvider store={store}>
-          <QueryClientProvider client={queryClient}>
-            <LoadingFullScreen>{children}</LoadingFullScreen>
-            {/* <ReactQueryDevtools initialIsOpen={true} /> */}
-          </QueryClientProvider>
-        </ReduxProvider>
-      </SessionProvider>
+      <LanguageProvider>
+        <Toaster position="top-center" reverseOrder={true} />
+        <SessionProvider>
+          <ReduxProvider store={store}>
+            <QueryClientProvider client={queryClient}>
+              <LoadingFullScreen>{children}</LoadingFullScreen>
+              {/* <ReactQueryDevtools initialIsOpen={true} /> */}
+            </QueryClientProvider>
+          </ReduxProvider>
+        </SessionProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

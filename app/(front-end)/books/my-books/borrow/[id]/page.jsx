@@ -11,6 +11,7 @@ import { FINE_RATE } from "@/lib/constants";
 import { Label } from "@radix-ui/react-label";
 import { differenceInDays } from "date-fns";
 import { useRouter } from "next/navigation";
+import LocalizedText from "@/components/frontend/LocalizedText";
 moment.locale("th");
 
 export default function Page({ params: { id } }) {
@@ -36,7 +37,7 @@ export default function Page({ params: { id } }) {
       ) : (
         <div className="">
           <div className="flex justify-between items-center py-4 sm:py-6 px-6 border rounded-sm sm:px-12 mb-2 ">
-            <h2 className=" text-xl font-semibold">รายละเอียดการยืม</h2>
+            <h2 className=" text-xl font-semibold"><LocalizedText value="รายละเอียดการยืม" /></h2>
             <button
               className=" hover:text-red-500 transition-all"
               onClick={() => router.back()}

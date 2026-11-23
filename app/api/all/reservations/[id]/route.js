@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 import { createNotification, notifyAdmins } from "@/lib/notifications";
+import { syncBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,7 @@ export async function DELETE(request, { params: { id } }) {
         where: { id: reservation.bookId },
         data: { remaining: { increment: 1 } },
       });
+      await syncBookAvailabilityStatus(tx, reservation.bookId);
 
       await tx.reservation.delete({ where: { id } });
     });

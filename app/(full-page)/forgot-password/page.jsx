@@ -1,5 +1,6 @@
 import ForgotPasswordForm from "@/components/frontend/ForgotPasswordForm";
 import { Info } from "lucide-react";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 export default function Register() {
   return (
@@ -12,7 +13,7 @@ export default function Register() {
         <div className="flex items-center sm:px-10 ">
           <Info className="flex-shrink-0 w-4 h-4 me-2" />
           <span className="sr-only">Info</span>
-          <h3 className="text-xl font-medium">ลืมรหัสผ่าน</h3>
+          <h3 className="text-xl font-medium"><LocalizedText value="ลืมรหัสผ่าน" /></h3>
         </div>
 
         <div className="sm:px-10">

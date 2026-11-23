@@ -6,18 +6,18 @@ import React from "react";
 
 export default function Layout({ children }) {
   return (
-    <div className="">
-      <div className=" cursor-grabbing">
+    <div className="min-w-0">
+      <div className="cursor-grabbing">
         <Banner />
       </div>
-      <div className="lg:grid lg:grid-cols-12 gap-4 w-full ">
-        <div className="hidden lg:block  lg:col-span-2 relative">
+      <div className="grid w-full min-w-0 gap-5 lg:grid-cols-[220px_minmax(0,1fr)_220px]">
+        <aside className="relative hidden lg:block">
           <Sidebar />
-        </div>
-        <div className="lg:col-span-8">{children}</div>
-        <div className="hidden lg:block lg:col-span-2 relative">
+        </aside>
+        <main className="min-w-0">{children}</main>
+        <aside className="relative hidden lg:block">
           <CategorySidebar />
-        </div>
+        </aside>
       </div>
     </div>
   );

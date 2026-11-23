@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ShareQrPage() {
+  const { t } = useLanguage();
   const [websiteUrl, setWebsiteUrl] = useState("");
 
   useEffect(() => {
@@ -18,9 +20,9 @@ export default function ShareQrPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] p-8">
       <div className="bg-card shadow-xl rounded-2xl p-10 max-w-sm w-full text-center flex flex-col items-center border">
-        <h1 className="text-2xl font-bold mb-2">QR Code ห้องสมุด</h1>
+        <h1 className="text-2xl font-bold mb-2">{t("QR Code ห้องสมุด")}</h1>
         <p className="text-muted-foreground text-sm mb-8">
-          สแกนเพื่อเข้าสู่เว็บไซต์ระบบจัดการห้องสมุด
+          {t("qr.description")}
         </p>
 
         {websiteUrl && (
@@ -37,7 +39,7 @@ export default function ShareQrPage() {
         )}
 
         <Button onClick={handlePrint} className="w-full">
-          พิมพ์ QR Code
+          {t("qr.print")}
         </Button>
       </div>
 

@@ -5,13 +5,18 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 export default function VerifyEmail() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("กำลังยืนยันบัญชี...");
+  const [userId, setUserId] = useState("");
   const router = useRouter();
+  const loginHref = userId
+    ? `/login?callbackUrl=${encodeURIComponent(`/onboarding/${userId}`)}`
+    : "/login";
 
   useEffect(() => {
     let cancelled = false;
@@ -36,13 +41,21 @@ export default function VerifyEmail() {
         }
 
         setStatus("success");
-        setMessage(result.message || "ยืนยันบัญชีสำเร็จ กำลังพาคุณไปยังหน้าตั้งค่าโปรไฟล์...");
+        setMessage(
+          result.userId
+            ? "ยืนยันบัญชีสำเร็จ เข้าสู่ระบบเพื่อกรอกข้อมูลส่วนตัวให้ครบถ้วน"
+            : result.message || "ยืนยันบัญชีสำเร็จ"
+        );
         toast.success("ยืนยันบัญชีสำเร็จ");
 
-        // Redirect ไปหน้าตั้งโปรไฟล์ (onboarding) หลังยืนยันสำเร็จ
         if (result.userId) {
+          setUserId(result.userId);
           setTimeout(() => {
-            router.push(`/onboarding/${result.userId}`);
+            router.replace(
+              `/login?callbackUrl=${encodeURIComponent(
+                `/onboarding/${result.userId}`
+              )}`
+            );
           }, 1500);
         }
       } catch (error) {
@@ -71,14 +84,14 @@ export default function VerifyEmail() {
           <Info className="flex-shrink-0 w-4 h-4 me-2" />
           <span className="sr-only">Info</span>
           <h3 className="text-lg font-medium">
-            {status === "success" ? "ยืนยันอีเมลสำเร็จ" : "ยืนยันอีเมล"}
+            <LocalizedText value={status === "success" ? "ยืนยันอีเมลสำเร็จ" : "ยืนยันอีเมล"} />
           </h3>
         </div>
         <div className="mt-2 mb-4 text-sm text-muted-foreground">{message}</div>
         <div className="mt-4 flex justify-end">
-          <Link href="/login">
+          <Link href={loginHref}>
             <Button className="text-sm font-bold" size="sm">
-              {status === "success" ? "เข้าสู่ระบบ" : "กลับไปหน้าเข้าสู่ระบบ"}
+              <LocalizedText value={status === "success" ? "เข้าสู่ระบบ" : "กลับไปหน้าเข้าสู่ระบบ"} />
             </Button>
           </Link>
         </div>

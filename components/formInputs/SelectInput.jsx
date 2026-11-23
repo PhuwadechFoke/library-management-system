@@ -8,6 +8,8 @@ export default function SelectInput({
   className = "",
   options = [],
   multiple = false,
+  errors,
+  isRequired = false,
 }) {
   return (
     <div className={className}>
@@ -19,7 +21,7 @@ export default function SelectInput({
       </Label>
       <div className="">
         <select
-          {...register(`${name}`)}
+          {...register(`${name}`, isRequired ? { required: true } : {})}
           id={name}
           name={name}
           multiple={multiple}
@@ -38,6 +40,11 @@ export default function SelectInput({
             );
           })}
         </select>
+        {errors?.[name] && (
+          <span className="text-sm text-red-600 dark:text-red-400">
+            {label} จำเป็นต้องเลือกข้อมูล
+          </span>
+        )}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 import { randomUUID } from "node:crypto";
+import { syncBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 export async function PUT(request, { params: { id } }) {
   try {
@@ -23,6 +24,7 @@ export async function PUT(request, { params: { id } }) {
       phoneNumber,
       educationLevel,
       educationYear,
+      branch,
       description,
       profileImage,
     } = await request.json();
@@ -65,6 +67,7 @@ export async function PUT(request, { params: { id } }) {
       phoneNumber,
       educationLevel,
       educationYear,
+      branch,
       description,
       profileImage,
     };
@@ -198,12 +201,13 @@ export async function DELETE(request, { params: { id } }) {
       });
 
       await Promise.all(
-        reservations.map(({ bookId, _count }) =>
-          tx.book.update({
+        reservations.map(async ({ bookId, _count }) => {
+          await tx.book.update({
             where: { id: bookId },
             data: { remaining: { increment: _count._all } },
-          })
-        )
+          });
+          await syncBookAvailabilityStatus(tx, bookId);
+        })
       );
 
       await tx.reservation.deleteMany({ where: { userId: id } });

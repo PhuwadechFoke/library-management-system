@@ -1,68 +1,45 @@
 import {
   Body,
-  Button,
-  Column,
   Container,
   Head,
   Html,
-  Img,
   Link,
   Preview,
-  Row,
   Section,
   Text,
 } from "@react-email/components";
 import * as React from "react";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-
 export const EmailTemplate = ({
   name = "",
-  redirectUrl = "/login",
+  redirectUrl,
   linkText,
   subject,
-  description
+  description,
 }) => (
-  <Html>
+  <Html lang="th">
     <Head />
-    <Preview>
-      {subject}
-    </Preview>
+    <Preview>{subject}</Preview>
     <Body style={main}>
       <Container style={container}>
-        {/* <Img
-          src={`${baseUrl}static/github.png`}
-          width="32"
-          height="32"
-          alt="Github"
-        /> */}
-
         <Text style={title}>{linkText}</Text>
 
         <Section style={section}>
           <Text style={text}>
             สวัสดีครับ <strong>{name}</strong>!
           </Text>
-          <Text style={text}> 
-            {description}
-          </Text>
+          <Text style={text}>{description}</Text>
 
           <Link
             style={button}
-            href={
-              redirectUrl.startsWith("http")
-                ? redirectUrl
-                : new URL(redirectUrl, baseUrl).toString()
-            }
+            href={redirectUrl}
           >
-            ยืนยัน
+            {linkText}
           </Link>
         </Section>
 
-
         <Text style={links}>
-          <Link style={link}>บันทึกการตรวจสอบความปลอดภัยของคุณ</Link> ・{" "}
-          <Link style={link}>ติดต่อฝ่ายสนับสนุน</Link>
+          บันทึกการตรวจสอบความปลอดภัยของคุณ ・ ติดต่อฝ่ายสนับสนุน
         </Text>
 
         <Text style={footer}>จาก อาชีวศึกษาอุดรธานี</Text>
@@ -84,16 +61,6 @@ const container = {
   width: "480px",
   margin: "0 auto",
   padding: "20px 0 48px",
-};
-const socialMediaIcon = {
-  display: "inline",
-  marginLeft: "32px",
-};
-const footerLogos = {
-  marginBottom: "32px",
-  paddingLeft: "8px",
-  paddingRight: "8px",
-  width: "100%",
 };
 const title = {
   fontSize: "24px",
@@ -120,15 +87,11 @@ const button = {
   borderRadius: "0.5em",
   padding: "0.75em 1.5em",
   marginTop: "20px",
+  display: "inline-block",
 };
 
 const links = {
   textAlign: "center",
-};
-
-const link = {
-  color: "#0366d6",
-  fontSize: "12px",
 };
 
 const footer = {

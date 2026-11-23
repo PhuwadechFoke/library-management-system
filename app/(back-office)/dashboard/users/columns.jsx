@@ -8,6 +8,7 @@ import DateUpdatedColumnCell from "@/components/backoffice/data-table-columns/Da
 import ImageColumn from "@/components/backoffice/data-table-columns/ImageColumn";
 import NumberColumn from "@/components/backoffice/data-table-columns/NumberColumn";
 import TitleColumn from "@/components/backoffice/data-table-columns/TitleColumn";
+import RoleColumn from "@/components/backoffice/data-table-columns/RoleColumn";
 
 export const columns = [
   {
@@ -32,8 +33,18 @@ export const columns = [
     header: ({ column }) => <TitleColumn column={column} title="ปี" />,
   },
   {
+    accessorKey: "branch",
+    header: ({ column }) => <TitleColumn column={column} title="สาขา" />,
+  },
+  {
     accessorKey: "emailAddress",
     header: ({ column }) => <TitleColumn column={column} title="อีเมล" />,
+  },
+  {
+    id: "role",
+    accessorFn: (profile) => profile.user?.role || "USER",
+    header: ({ column }) => <TitleColumn column={column} title="สิทธิ์" />,
+    cell: ({ row }) => <RoleColumn row={row} />,
   },
   {
     accessorKey: "createdAt",

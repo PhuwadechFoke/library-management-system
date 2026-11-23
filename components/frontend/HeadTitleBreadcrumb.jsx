@@ -7,7 +7,7 @@ export default function HeadTitleBreadcrumb({ icon }) {
   const Icon = icon;
   const router = useRouter();
   return (
-    <div className="border bg-card py-2 px-4 mb-3 rounded-sm">
+    <div className="mb-4 rounded-2xl border border-border/70 bg-card/80 px-4 py-3 shadow-sm backdrop-blur-sm">
       <div className="flex justify-between items-center w-full h-full ">
         <Breadcrumb />
         <Icon

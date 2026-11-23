@@ -27,6 +27,7 @@ Table UserProfile {
   phoneNumber String
   educationLevel String
   educationYear String
+  branch String
   description String
   profileImage String
   userId String [unique, not null]
@@ -87,6 +88,7 @@ Table Book {
   price Int [not null]
   quantity Int [not null]
   remaining Int [not null]
+  availabilityStatus BookAvailabilityStatus [not null, default: 'UNAVAILABLE']
   author String [not null]
   active Boolean [not null, default: true]
   imageUrl String
@@ -228,6 +230,11 @@ Table BookReceipt {
 Enum UserRole {
   ADMIN
   USER
+}
+
+Enum BookAvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
 }
 
 Enum ActivityType {

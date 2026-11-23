@@ -1,5 +1,6 @@
 import React from "react";
 import { QRCodeSVG } from "qrcode.react";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 export default function LibraryCardQR({ userProfile }) {
   if (!userProfile) return null;
@@ -11,8 +12,8 @@ export default function LibraryCardQR({ userProfile }) {
 
   return (
     <div className="flex flex-col items-center justify-center bg-card shadow-md rounded-2xl p-6 border text-center">
-      <h3 className="font-bold text-lg mb-1">บัตรห้องสมุดดิจิทัล</h3>
-      <p className="text-xs text-muted-foreground mb-4">แสดง QR Code นี้เพื่อทำการยืม-คืน</p>
+      <h3 className="font-bold text-lg mb-1"><LocalizedText value="บัตรห้องสมุดดิจิทัล" /></h3>
+      <p className="text-xs text-muted-foreground mb-4"><LocalizedText value="profile.cardUse" /></p>
       
       <div className="bg-white p-3 rounded-lg shadow-inner inline-block">
         <QRCodeSVG 

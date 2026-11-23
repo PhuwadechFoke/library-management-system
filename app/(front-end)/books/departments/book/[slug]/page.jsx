@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/lib/getData";
 import { useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 export default function DepartmentBookDetailPage({ params: { slug } }) {
   const {
@@ -56,7 +57,7 @@ export default function DepartmentBookDetailPage({ params: { slug } }) {
           </div>
         </div>
         <div className="w-full p-2 pb-5 mb-2 ">
-          <h2 className="text-lg font-semibold">รายละเอียด</h2>
+          <h2 className="text-lg font-semibold"><LocalizedText value="รายละเอียด" /></h2>
           <span className="text-balance text-muted-foreground">
             {book.description}
           </span>
@@ -64,7 +65,7 @@ export default function DepartmentBookDetailPage({ params: { slug } }) {
         {book.relatedBooks?.length > 0 && (
           <div className="pt-4 border-t">
             <h2 className="text-lg font-semibold mb-4 px-4">
-              หนังสือแผนกอื่นที่เกี่ยวข้อง
+              <LocalizedText value="หนังสือแผนกอื่นที่เกี่ยวข้อง" />
             </h2>
             <WideCardCarousel books={book.relatedBooks} />
           </div>

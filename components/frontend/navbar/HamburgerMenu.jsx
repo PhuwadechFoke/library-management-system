@@ -14,24 +14,37 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { sidebarLinks } from "@/lib/sidebarLink";
 import SwitchTheme from "@/components/SwitchTheme";
+import LanguageSwitcher from "@/components/frontend/LanguageSwitcher";
+import { useLanguage } from "@/context/LanguageContext";
+import { nameWebsite } from "@/lib/nameWebsite";
 
 export default function HamburgerMenu() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   return (
     <Sheet>
-      <SheetTrigger>
-        <div className="flex items-center p-2 rounded-sm border border-custom-border bg-custom-background text-zinc-100">
-          <Menu />
-        </div>
+      <SheetTrigger asChild>
+        <button
+          type="button"
+          aria-label="เปิดเมนูนำทาง"
+          className="group relative inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-red-900/15 bg-white/75 text-red-900 shadow-sm shadow-red-950/5 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-red-800/30 hover:bg-red-50 hover:shadow-md hover:shadow-red-950/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/50 focus-visible:ring-offset-2 active:translate-y-0 dark:border-white/10 dark:bg-zinc-900/75 dark:text-red-200 dark:hover:bg-red-950/50"
+        >
+          <span className="absolute inset-0 origin-left scale-x-0 bg-gradient-to-r from-red-700/10 to-amber-500/10 transition-transform duration-300 group-hover:scale-x-100" />
+          <Menu className="relative h-5 w-5 transition-transform duration-200 group-hover:scale-110" strokeWidth={2.2} />
+        </button>
       </SheetTrigger>
-      <SheetContent side="left">
+      <SheetContent
+        side="left"
+        className="rounded-r-3xl border-border/70 bg-background/95 shadow-2xl backdrop-blur-xl"
+      >
         <SheetHeader className={" relative"}>
           <SwitchTheme
             customClass="block sm:hidden absolute -top-3 -left-3"
             inSheet={true}
           />
-          <SheetTitle className="flex items-center justify-center border-b text-2xl pb-2 ">
-            <BookText className="mr-1 w-5" /> UDVC
+          <LanguageSwitcher customClass="block sm:hidden absolute -top-3 -right-3" />
+          <SheetTitle className="flex items-center justify-center border-b border-border/70 pb-3 text-base">
+            <BookText className="mr-1 w-5 shrink-0" /> {nameWebsite}
           </SheetTitle>
         </SheetHeader>
         <div className="flex flex-col items-center mt-4 relative">
@@ -53,7 +66,7 @@ export default function HamburgerMenu() {
                       }
                     >
                       <Icon className="mr-2 w-4" />
-                      <span>{item.title}</span>
+                      <span>{t(item.title)}</span>
                     </div>
                   </SheetClose>
                 </Link>
@@ -66,7 +79,7 @@ export default function HamburgerMenu() {
               className={"flex mb-1 cursor-pointer"}
             >
               <File className="mr-1 w-4 " />
-              <span>คู่มือใช้งาน</span>
+              <span>{t("nav.manual")}</span>
             </Link>
           </div>
         </div>

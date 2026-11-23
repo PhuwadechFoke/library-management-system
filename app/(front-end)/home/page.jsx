@@ -22,24 +22,41 @@ export default function page() {
     queryFn: () => getData("all/books/new-books"),
   });
 
-  if (errorAll || errorNewBooks) return <div>error</div>;
+  const {
+    data: popularBooks,
+    isLoading: isLoadingPopularBooks,
+    error: errorPopularBooks,
+  } = useQuery({
+    queryKey: ["popularBooks"],
+    queryFn: () => getData("all/books/popular"),
+  });
+
+  if (errorAll || errorNewBooks || errorPopularBooks) {
+    return <div>เกิดข้อผิดพลาดในการโหลดรายการหนังสือ</div>;
+  }
 
   return (
-    <div className="">
-      <div className="border bg-card py-2 px-4 rounded-sm">
+    <div className="space-y-4 pb-4">
         <WideCard
-          title={"หนังสือทั้งหมด"}
+          title={"books.allTitle"}
           books={booksAll}
           isLoading={isLoadingAll}
           href="/books"
         />
         <WideCard
-          title={"หนังสือใหม่"}
+          title={"books.newTitle"}
           books={booksNewBooks}
           isLoading={isLoadingNewBooks}
           href="/books/new-books"
         />
-      </div>
+        <WideCard
+          title={"books.popularTitle"}
+          books={popularBooks}
+          isLoading={isLoadingPopularBooks}
+          href="/statistics"
+          actionTitle="books.viewPopularity"
+          showPopularity
+        />
     </div>
   );
 }

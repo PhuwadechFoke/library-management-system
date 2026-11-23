@@ -1,6 +1,7 @@
 import OnboardingForm from "@/components/frontend/OnboardingForm";
 import Image from "next/image";
 import React from "react";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 export default function page({ params: { id } }) {
   return (
@@ -24,7 +25,7 @@ export default function page({ params: { id } }) {
               <div className="w-full md:mt-0 sm:max-w-md">
                 <div className="px-10 py-10 space-y-4 md:space-y-6 sm:p-2">
                   <h1 className=" text-xl sm:text-3xl font-bold leading-tight tracking-tight text-center mb-6 sm:mb-5">
-                    ข้อมูลส่วนตัว
+                    <LocalizedText value="auth.profileTitle" />
                   </h1>
                   <OnboardingForm id={id} />
                 </div>

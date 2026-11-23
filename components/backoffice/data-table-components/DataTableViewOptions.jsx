@@ -11,12 +11,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+import { useLanguage } from "@/context/LanguageContext";
 
 7
 
 export function DataTableViewOptions({
   table,
 }) {
+  const { t } = useLanguage();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,11 +28,11 @@ export function DataTableViewOptions({
           className="ml-auto hidden h-8 lg:flex"
         >
           <MixerHorizontalIcon className="mr-2 h-4 w-4" />
-          View
+          {t("common.viewColumns")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("common.toggleColumns")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()

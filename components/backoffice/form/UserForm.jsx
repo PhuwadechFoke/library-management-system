@@ -12,6 +12,7 @@ import TextAreaInput from "@/components/formInputs/TextArealInput";
 import TextInput from "@/components/formInputs/TextInput";
 import { isLoading } from "@/redux/slices/loadingFullScreenSlice";
 import { queryClient } from "@/lib/react-query-client";
+import { branchOptions } from "@/lib/branches";
 
 const prefixes = ["นาย", "นาง", "นางสาว"].map((value) => ({
   id: value,
@@ -46,6 +47,7 @@ export default function UserForm({ updateData }) {
       phoneNumber: updateData?.phoneNumber || "",
       educationLevel: updateData?.educationLevel || "",
       educationYear: updateData?.educationYear || "",
+      branch: updateData?.branch || "",
       description: updateData?.description || "",
     },
   });
@@ -130,6 +132,12 @@ export default function UserForm({ updateData }) {
           name="educationYear"
           register={register}
           options={educationYears}
+        />
+        <SelectInput
+          label="สาขาที่เรียน"
+          name="branch"
+          register={register}
+          options={branchOptions}
         />
         <TextAreaInput
           label="รายละเอียด"

@@ -1,8 +1,10 @@
 import React from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Heading({ title ,className }) {
+  const { t } = useLanguage();
   return (
-      <h2 className={`text-xl text-center sm:text-left font-semibold mb-3 sm:mb-0 ${className}`} >{title}</h2>
+      <h2 className={`mb-3 text-center text-xl font-bold tracking-tight sm:mb-0 sm:text-left ${className}`} >{t(title)}</h2>
   );
 }
   

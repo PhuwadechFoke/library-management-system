@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +119,7 @@ export async function PUT(request, { params: { id } }) {
         { status: 404 }
       );
     }
+    const updatedRemaining = parseInt(remaining) || 0;
     const updateBook = await db.book.update({
       where: {
         id,
@@ -127,7 +129,8 @@ export async function PUT(request, { params: { id } }) {
         slug,
         price: parseInt(price) || 0,
         quantity: parseInt(quantity) || 0,
-        remaining: parseInt(remaining) || 0,
+        remaining: updatedRemaining,
+        availabilityStatus: getBookAvailabilityStatus(updatedRemaining),
         author,
         imageUrl: imageUrls[0],
         imageUrls,

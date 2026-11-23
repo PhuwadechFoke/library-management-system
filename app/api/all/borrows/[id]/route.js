@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
+import { syncBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 // api/admin/borrows/[id]/route.js
 export async function GET(request, { params: { id } }) {
@@ -71,15 +72,12 @@ export async function PUT(request, { params: { id } }) {
 
     // อัปเดตข้อมูลจำนวนหนังสือ ถ้าได้คืนแล้ว
       if (status !== "LOST") {
-        const updateBook = await db.book.update({
-          where: {
-            id: bookId,
-          },
-          data: {
-            remaining: {
-              increment: 1,
-            },
-          },
+        const updateBook = await db.$transaction(async (tx) => {
+          await tx.book.update({
+            where: { id: bookId },
+            data: { remaining: { increment: 1 } },
+          });
+          return syncBookAvailabilityStatus(tx, bookId);
         });
         console.log(updateBook);
       }

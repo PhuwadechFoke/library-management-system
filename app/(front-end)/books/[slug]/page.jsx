@@ -14,6 +14,7 @@ import { useDispatch } from "react-redux";
 import { CoolMode } from "@/components/magicui/cool-mode";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 export default function page({ params: { slug } }) {
   const { data: session } = useSession();
@@ -110,23 +111,50 @@ export default function page({ params: { slug } }) {
   return (
     <div className="">
       <HeadTitleBreadcrumb icon={X} />
-      <div className="border bg-card py-4 px-4 rounded-sm w-full">
-        <div className="grid grid-cols-12 py-2 gap-4 sm:gap-8 mb-4 w-full">
-          <div className="col-span-full sm:col-span-5 w-full">
+      <div className="w-full rounded-2xl border border-border/70 bg-card/85 p-3 shadow-sm backdrop-blur-sm sm:rounded-3xl sm:p-6">
+        <div className="mb-6 grid w-full grid-cols-12 gap-5 py-2 sm:gap-8">
+          <div className="col-span-full w-full sm:col-span-5">
             <CarouselBook book={book} />
           </div>
-          <div className="col-span-full sm:col-span-7 px-2 sm:px-8 grid items-center w-full">
-            <div className="grid mb-4 sm:mb-2 ">
-              <h1 className="text-3xl font-bold ">{book.title}</h1>
-              <span className="text-lg font-semibold mb-1 ">
+          <div className="col-span-full grid w-full content-center px-2 sm:col-span-7 sm:px-8">
+            <div className="mb-5 grid">
+              <span className="mb-3 inline-flex w-fit items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-800 dark:bg-red-950/50 dark:text-red-200">
+                {book.category.title}
+              </span>
+              <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+                {book.title}
+              </h1>
+              <span className="mt-2 text-sm text-muted-foreground">
                 ผู้แต่ง {book.author}
               </span>
-              <span className="text-lg font-thin">ราคา {book.price}</span>
-              <span className="text-lg font-thin">
-                คงเหลือ {book.remaining}
-              </span>
-              <span className="text-lg font-thin">
-                หมวดหมู่ {book.category.title}
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border bg-background/70 p-3">
+                  <span className="block text-xs text-muted-foreground">ราคา</span>
+                  <span className="mt-1 block text-lg font-bold text-red-800 dark:text-red-300">
+                    {Number(book.price).toLocaleString("th-TH")} บาท
+                  </span>
+                </div>
+                <div className="rounded-xl border bg-background/70 p-3">
+                  <span className="block text-xs text-muted-foreground">จำนวนคงเหลือ</span>
+                  <span className="mt-1 block text-lg font-bold">
+                    {book.remaining} เล่ม
+                  </span>
+                </div>
+              </div>
+              <span
+                className={`mt-4 inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold ${
+                  (book.availabilityStatus === "AVAILABLE" ||
+                    (book.availabilityStatus == null && book.remaining > 0))
+                    ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200"
+                    : "bg-red-50 text-red-800 dark:bg-red-950/50 dark:text-red-200"
+                }`}
+              >
+                <span className="h-2 w-2 rounded-full bg-current" />
+                สถานะหนังสือ{" "}
+                {book.availabilityStatus === "AVAILABLE" ||
+                (book.availabilityStatus == null && book.remaining > 0)
+                  ? "ว่าง"
+                  : "ไม่ว่าง"}
               </span>
             </div>
             <div className="w-full flex sm:items-center sm:justify-start gap-2">
@@ -142,8 +170,8 @@ export default function page({ params: { slug } }) {
                 <Button
                   variant="outline"
                   onClick={() => addToFavorite()}
-                  className={`w-full sm:w-auto transition-colors duration-200 ${
-                    isFavorite ? "text-white bg-pink-600 dark:bg-pink-800" : ""
+                  className={`w-full rounded-xl transition-all duration-200 hover:-translate-y-0.5 sm:w-auto ${
+                    isFavorite ? "border-pink-600 bg-pink-600 text-white shadow-md shadow-pink-900/20 dark:bg-pink-800" : "hover:border-pink-500 hover:text-pink-600"
                   }`}
                 >
                   <Heart />
@@ -152,9 +180,9 @@ export default function page({ params: { slug } }) {
             </div>
           </div>
         </div>
-        <div className="w-full p-2 pb-5 mb-2 ">
-          <h2 className="text-lg font-semibold">รายละเอียด</h2>
-          <span className="text-balance text-muted-foreground">
+        <div className="mb-2 w-full rounded-2xl border bg-background/50 p-4 sm:p-5">
+          <h2 className="mb-2 text-lg font-bold"><LocalizedText value="รายละเอียด" /></h2>
+          <span className="text-balance leading-7 text-muted-foreground">
             {book.description}
           </span>
         </div>
@@ -162,7 +190,7 @@ export default function page({ params: { slug } }) {
           .length > 0 && (
           <div className="pt-4 border-t">
             <h2 className="text-lg font-semibold mb-4 px-4">
-              หนังสือที่เกี่ยวข้อง
+              <LocalizedText value="หนังสือที่เกี่ยวข้อง" />
             </h2>
             <WideCardCarousel
               books={categories?.book.filter(

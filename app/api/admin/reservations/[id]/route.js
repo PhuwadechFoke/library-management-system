@@ -1,6 +1,7 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { createNotification } from "@/lib/notifications";
+import { syncBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 // อัปเดตสถานะว่า admin อ่านแล้ว
 export async function PUT(request, { params: { id } }) {
@@ -40,6 +41,7 @@ export async function DELETE(request, { params: { id } }) {
         where: { id: reservation.bookId },
         data: { remaining: { increment: 1 } },
       });
+      await syncBookAvailabilityStatus(tx, reservation.bookId);
 
       await tx.reservation.delete({ where: { id } });
     });

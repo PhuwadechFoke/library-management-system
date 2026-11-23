@@ -28,8 +28,10 @@ import {
 import { useState } from "react";
 import { DataTableToolbar } from "./DataTableToolbar";
 import { DataTablePagination } from "./DataTablePagination";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function DataTable({ columns, data, filterKeys=[] }) {
+  const { t } = useLanguage();
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState({});
   const [columnFilters, setColumnFilters] = useState([]);
@@ -58,9 +60,9 @@ export default function DataTable({ columns, data, filterKeys=[] }) {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="admin-table space-y-4">
       <DataTableToolbar table={table} filterKeys={filterKeys} />
-      <div className="rounded-md border">
+      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/70 shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -70,6 +72,8 @@ export default function DataTable({ columns, data, filterKeys=[] }) {
                     <TableHead key={header.id} colSpan={header.colSpan}>
                       {header.isPlaceholder
                         ? null
+                        : typeof header.column.columnDef.header === "string"
+                        ? t(header.column.columnDef.header)
                         : flexRender(
                             header.column.columnDef.header,
                             header.getContext()
@@ -103,7 +107,7 @@ export default function DataTable({ columns, data, filterKeys=[] }) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  ไม่พบข้อมูล
+                  {t("common.noDataRows")}
                 </TableCell>
               </TableRow>
             )}

@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 export async function POST(request) {
   try {
@@ -20,6 +21,7 @@ export async function POST(request) {
       price: parseInt(price),
       quantity: parseInt(quantity),
       remaining: parseInt(quantity),
+      availabilityStatus: getBookAvailabilityStatus(quantity),
       author,
       imageUrls,
       imageUrl : imageUrls[0],

@@ -4,11 +4,11 @@ import React from "react";
 
 export default function Layout({ children }) {
   return (
-    <div className="relative">
-      <Navbar className={" max-w-7xl border-b mx-auto py-2 sm:py-3 px-4"} />
-      <div className="max-w-7xl mx-auto py-3 sm:py-4 px-4 sm:px-0">
-        <div>{children}</div>
-      </div>
+    <div className="relative isolate min-h-screen">
+      <Navbar className="mx-auto max-w-[1600px] border-b border-border/70 px-4 py-3 sm:px-6" />
+      <main className="mx-auto max-w-[1600px] px-3 py-4 sm:px-6 sm:py-6">
+        <div className="min-w-0">{children}</div>
+      </main>
     </div>
   );
 }

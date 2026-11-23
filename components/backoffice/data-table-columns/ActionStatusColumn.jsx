@@ -33,8 +33,8 @@ export default function ActionStatusColumn({
   const dispatch = useDispatch();
 
   const bookStatuses = {
-    true: "พร้อมให้ยืม",
-    false: "ยังไม่พร้อมให้ยืม",
+    true: "แสดงในรายการ",
+    false: "ซ่อนจากรายการ",
   };
 
   const statusLabel = bookStatuses[status] || "ไม่พบสถานะ";

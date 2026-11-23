@@ -105,7 +105,7 @@ export default function Page() {
     return (
       <div>
         <HeadTitleBreadcrumb icon={BookOpenCheck} />
-        <div className="border bg-card py-4 px-4 rounded-sm">
+        <div className="rounded-2xl border border-border/70 bg-card/85 px-4 py-5 shadow-sm backdrop-blur-sm sm:px-5">
           <Skeleton className="w-full h-10 mb-4 rounded-md" />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {Array.from({ length: 10 }, (_, i) => (
@@ -124,7 +124,7 @@ export default function Page() {
   return (
     <div>
       <HeadTitleBreadcrumb icon={BookOpenCheck} />
-      <div className="border bg-card py-4 px-4 rounded-sm">
+      <div className="rounded-2xl border border-border/70 bg-card/85 px-4 py-5 shadow-sm backdrop-blur-sm sm:px-5">
         {/* ช่องค้นหา */}
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -133,7 +133,7 @@ export default function Page() {
             placeholder="ค้นหาหนังสือที่ต้องการจอง..."
             value={searchTerm}
             onChange={handleSearch}
-            className="w-full rounded-md border bg-background pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full rounded-xl border border-border/70 bg-background/80 py-3 pl-10 pr-4 text-sm shadow-sm transition-shadow placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-red-800/20"
           />
         </div>
 
@@ -149,7 +149,7 @@ export default function Page() {
             {currentBooks.map((book) => (
               <div
                 key={book.id}
-                className="group flex flex-col items-center rounded-lg border bg-background p-3 transition-all duration-300 hover:shadow-md hover:-translate-y-1"
+                className="group flex flex-col items-center rounded-2xl border border-border/70 bg-background/75 p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-red-800/25 hover:bg-background hover:shadow-lg"
               >
                 {/* รูปปกหนังสือ */}
                 <div className="relative mb-2">
@@ -159,7 +159,7 @@ export default function Page() {
                     width={200}
                     height={100}
                     loading="lazy"
-                    className="object-cover w-28 h-36 rounded-sm group-hover:scale-105 transition-all duration-300"
+                    className="h-36 w-28 rounded-xl object-cover shadow-md transition-transform duration-300 group-hover:scale-105"
                   />
                   {/* Badge คงเหลือ */}
                   <span
@@ -187,7 +187,7 @@ export default function Page() {
                   onChange={(e) =>
                     handleDaysChange(book.id, parseInt(e.target.value))
                   }
-                  className="w-full rounded-md border px-2 py-1 text-xs bg-background mb-2 text-center"
+                  className="mb-2 w-full rounded-xl border border-border/70 bg-background px-2 py-2 text-center text-xs focus:outline-none focus:ring-2 focus:ring-red-800/20"
                   disabled={book.remaining <= 0}
                 >
                   {[1, 2, 3, 4, 5, 6, 7].map((day) => (

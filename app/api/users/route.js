@@ -3,16 +3,17 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import base64url from "base64url";
 import { render } from "@react-email/render";
-import { Resend } from "resend";
+import { getEmailTransport } from "@/lib/emailTransport";
 import EmailTemplate from "@/components/ui/email-template";
 import db from "@/lib/db";
 import { nameWebsite } from "@/lib/nameWebsite";
 
 export async function POST(request) {
-  let createdUserId;
+  let userCreated = false;
   try {
-    if (!process.env.RESEND_API_KEY) {
-      console.error("RESEND_API_KEY is not configured");
+    const emailTransport = getEmailTransport();
+    if (!emailTransport) {
+      console.error("Gmail SMTP credentials are not configured");
       return NextResponse.json(
         { message: "ระบบส่งอีเมลยังไม่ได้ตั้งค่า กรุณาติดต่อผู้ดูแลระบบ" },
         { status: 503 }
@@ -81,6 +82,7 @@ export async function POST(request) {
           phoneNumber: "",
           educationLevel: "",
           educationYear: "",
+          branch: "",
           description: "",
           profileImage: "",
         },
@@ -88,8 +90,7 @@ export async function POST(request) {
 
       return user;
     });
-    createdUserId = newUser.id;
-
+    userCreated = true;
     const subject = `คุณได้สมัครเป็นสมาชิกในเว็บไซต์ของ ${nameWebsite} โปรดยืนยันบัญชีของคุณ`;
     const linkText = "ยืนยันบัญชีของคุณ";
     const description = "ขอขอบคุณที่สร้างบัญชีกับเรา โปรดยืนยันบัญชีของคุณ";
@@ -103,26 +104,12 @@ export async function POST(request) {
       EmailTemplate({ name: username, redirectUrl, linkText, subject, description })
     );
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const { error: sendError } = await resend.emails.send({
-      from: `${nameWebsite} <${process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"}>`,
-      to: [email],
+    await emailTransport.transporter.sendMail({
+      from: `${nameWebsite} <${emailTransport.user}>`,
+      to: email,
       subject: subject,
       html: emailHtml,
     });
-
-    if (sendError) {
-      console.error("Resend rejected verification email:", sendError);
-      await db.user.delete({ where: { id: newUser.id } });
-      createdUserId = undefined;
-      return NextResponse.json(
-        {
-          message:
-            "ส่งอีเมลยืนยันไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า Resend หรือแจ้งผู้ดูแลระบบ",
-        },
-        { status: 502 }
-      );
-    }
 
     return NextResponse.json(
       {
@@ -133,19 +120,19 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error("Failed to register user:", error);
-    if (createdUserId) {
-      try {
-        await db.user.delete({ where: { id: createdUserId } });
-      } catch (cleanupError) {
-        console.error(
-          "Failed to clean up unverified account after email failure:",
-          cleanupError
-        );
-      }
+    if (userCreated) {
+      return NextResponse.json(
+        {
+          canResendVerification: true,
+          message:
+            "สร้างบัญชีแล้ว แต่ส่งอีเมลยืนยันไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า Gmail SMTP แล้วลองส่งลิงก์อีกครั้ง",
+        },
+        { status: 502 }
+      );
     }
     return NextResponse.json(
       {
-        message: "สมัครสมาชิกหรือส่งอีเมลยืนยันไม่สำเร็จ กรุณาลองอีกครั้ง",
+        message: "สมัครสมาชิกไม่สำเร็จ กรุณาลองอีกครั้ง",
       },
       { status: 500 }
     );

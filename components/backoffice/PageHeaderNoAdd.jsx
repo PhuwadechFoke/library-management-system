@@ -5,11 +5,12 @@ import { Skeleton } from "../ui/skeleton";
 export default function PageHeaderNoAdd({ loading, heading, children }) {
   if (loading) {
     return (
-      <Skeleton className="sm:flex items-center justify-between py-6 sm:py-8 px-6 sm:px-12 mb-2"></Skeleton>
+      <Skeleton className="mb-4 h-20 rounded-2xl"></Skeleton>
     );
   }
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 sm:py-6 px-6 border rounded-sm sm:px-12 mb-2 bg-card">
+    <div className="admin-page-header relative mb-4 flex flex-col justify-between gap-4 overflow-hidden rounded-2xl border border-border/70 bg-card/85 px-5 py-5 shadow-sm backdrop-blur-sm sm:flex-row sm:items-center sm:px-7">
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-red-700 via-orange-500 to-amber-300" />
       <Heading title={heading} className="mb-0" />
       {children && (
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">

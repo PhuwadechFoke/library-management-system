@@ -1,6 +1,7 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { createNotification } from "@/lib/notifications";
+import { getBookAvailabilityStatus, syncBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 // ตั้งค่า origin ของ frontend ที่อนุญาตให้เรียก API นี้ได้
 const corsHeaders = {
@@ -45,16 +46,6 @@ export async function POST(request) {
       );
     }
 
-    // ลดจำนวนคงเหลือของหนังสือลง 1 และอัปเดตสถานะอัตโนมัติ
-    const newRemaining = book.remaining - 1;
-    const updatedBook = await db.book.update({
-      where: { id: bookId },
-      data: {
-        remaining: newRemaining,
-        active: newRemaining > 0,
-      },
-    });
-
     // สร้างบันทึกการยืมใหม่ในฐานข้อมูล
     const newBorrow = {
       bookId,
@@ -65,17 +56,32 @@ export async function POST(request) {
       numberOfDays: parseInt(numberOfDays),
     };
 
-    const borrowRecord = await db.borrow.create({
-      data: newBorrow,
-    });
+    const borrowRecord = await db.$transaction(async (tx) => {
+      const stockUpdate = await tx.book.updateMany({
+        where: { id: bookId, remaining: { gt: 0 } },
+        data: { remaining: { decrement: 1 } },
+      });
 
-    // บันทึกกิจกรรมการอนุมัติคำขอยืมหนังสือ
-    await db.activity.create({
-      data: {
-        type: "CREATE_BORROW",
-        userProfileId: approverId,
-        bookId: borrowRecord.bookId,
-      },
+      if (stockUpdate.count === 0) {
+        throw new Error("หนังสือหมดสต็อก");
+      }
+
+      const updatedBook = await syncBookAvailabilityStatus(tx, bookId);
+      await tx.book.update({
+        where: { id: bookId },
+        data: { active: updatedBook.remaining > 0 },
+      });
+
+      const createdBorrow = await tx.borrow.create({ data: newBorrow });
+      await tx.activity.create({
+        data: {
+          type: "CREATE_BORROW",
+          userProfileId: approverId,
+          bookId: createdBorrow.bookId,
+        },
+      });
+
+      return createdBorrow;
     });
 
     // ส่ง in-app notification ให้ผู้ยืม
@@ -88,12 +94,12 @@ export async function POST(request) {
     });
 
     console.log("CREATE_BORROW");
-    return NextResponse.json(newBorrow, { headers: corsHeaders });
+    return NextResponse.json(borrowRecord, { headers: corsHeaders });
   } catch (error) {
     console.log(error);
     return NextResponse.json(
-      { message: "เกิดข้อผิดพลาดในการยืมหนังสือ", error },
-      { status: 500, headers: corsHeaders }
+      { message: error.message === "หนังสือหมดสต็อก" ? error.message : "เกิดข้อผิดพลาดในการยืมหนังสือ", error },
+      { status: error.message === "หนังสือหมดสต็อก" ? 400 : 500, headers: corsHeaders }
     );
   }
 }

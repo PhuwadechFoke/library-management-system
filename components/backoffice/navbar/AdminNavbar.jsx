@@ -16,16 +16,18 @@ export default async function AdminNavbar({ className }) {
 
   return (
     <div
-      className={`flex justify-between sticky top-0 backdrop-blur-xl z-40 w-full ${className}`}
+      className={`sticky top-0 z-40 flex w-full items-center justify-between bg-background/80 backdrop-blur-xl ${className}`}
     >
-      <div className="block lg:hidden">
-        <AdminHamburgerMenu />
-      </div>
-      <Link href="/home" className="text-3xl flex items-center gap-2">
-        <BookOpen width={26} height={26} className="text-custom-text" />
+      <Link href="/home" className="admin-brand flex min-w-0 items-center gap-2.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-red-800/10 bg-gradient-to-br from-red-700/10 to-amber-500/15 shadow-inner">
+          <BookOpen width={22} height={22} className="text-custom-text" />
+        </span>
         <SparklesTextDemo text={"LMS"} />
+        <span className="text-xs font-semibold leading-tight text-custom-text sm:text-sm">
+          วิทยาลัยอาชีวศึกษาอุดรธานี
+        </span>
       </Link>
-      <div className="text-3xl flex items-center justify-center gap-1 sm:gap-4">
+      <div className="flex shrink-0 items-center justify-center gap-1 sm:gap-3">
         <CommandDialogDemo />
         <SwitchTheme customClass={"hidden sm:block"} />
         {!session ? (
@@ -38,6 +40,9 @@ export default async function AdminNavbar({ className }) {
             <NavAvatar session={session} />
           </div>
         )}
+        <div className="ml-1 block lg:hidden">
+          <AdminHamburgerMenu />
+        </div>
       </div>
     </div>
   );

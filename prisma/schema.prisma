@@ -20,6 +20,11 @@ enum UserRole {
   USER
 }
 
+enum BookAvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
+}
+
 model User {
   id                String  @id @default(uuid())
   username          String?
@@ -47,6 +52,7 @@ model UserProfile {
   phoneNumber    String?
   educationLevel String?
   educationYear  String?
+  branch         String?
   description    String?
   profileImage   String?
 
@@ -126,6 +132,7 @@ model Book {
   price       Int
   quantity    Int
   remaining   Int
+  availabilityStatus BookAvailabilityStatus @default(UNAVAILABLE)
   author      String
   active      Boolean  @default(true)
   imageUrl    String?

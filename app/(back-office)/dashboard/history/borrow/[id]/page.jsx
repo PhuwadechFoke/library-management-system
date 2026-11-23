@@ -19,6 +19,7 @@ import Swal from "sweetalert2";
 import { isLoading } from "@/redux/slices/loadingFullScreenSlice";
 import toast from "react-hot-toast";
 import FineReceiptModal from "@/components/backoffice/FineReceiptModal";
+import LocalizedText from "@/components/frontend/LocalizedText";
 moment.locale("th");
 
 export default function Page({ params: { id } }) {
@@ -147,7 +148,7 @@ export default function Page({ params: { id } }) {
       ) : (
         <div className="">
           <div className="flex justify-between items-center py-4 sm:py-6 px-6 border rounded-sm sm:px-12 mb-2 ">
-            <h2 className=" text-xl font-semibold">รายละเอียดการยืม</h2>
+            <h2 className=" text-xl font-semibold"><LocalizedText value="รายละเอียดการยืม" /></h2>
             <button
               className=" hover:text-red-500 transition-all"
               onClick={() => router.back()}

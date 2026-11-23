@@ -24,6 +24,7 @@ import { FINE_RATE } from "@/lib/constants";
 import Swal from "sweetalert2";
 import { isLoading } from "@/redux/slices/loadingFullScreenSlice";
 import toast from "react-hot-toast";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 export default function page({ params: { id } }) {
   const router = useRouter();
@@ -154,7 +155,7 @@ export default function page({ params: { id } }) {
       ) : (
         <div className="">
           <div className="flex justify-between items-center py-4 sm:py-6 px-6 border rounded-sm sm:px-12 mb-2 ">
-            <h2 className=" text-xl font-semibold">ยืมหนังสือ</h2>
+            <h2 className=" text-xl font-semibold"><LocalizedText value="ยืมหนังสือ" /></h2>
             <button
               className=" hover:text-red-500 transition-all"
               onClick={() => router.back()}
@@ -189,7 +190,7 @@ export default function page({ params: { id } }) {
           </div>
           {userId ? (
             <div className=" w-full py-4 sm:py-6 px-6 border rounded-sm sm:px-12 my-2">
-              <h2 className="text-xl font-semibold mb-5">รายละเอียดการยืม</h2>
+              <h2 className="text-xl font-semibold mb-5"><LocalizedText value="รายละเอียดการยืม" /></h2>
               <div className="flex items-center  ">
                 {isUserDetailLoading ? (
                   <Skeleton className="w-full h-6 mb-2" />

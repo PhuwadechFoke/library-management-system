@@ -60,6 +60,10 @@ export default function RegisterForm() {
           setCanResendVerification(true);
           toast.error("มีบัญชีในระบบแล้ว");
         } else {
+          if (responseData.canResendVerification) {
+            setEmailErr(responseData.message || "ส่งอีเมลยืนยันไม่สำเร็จ");
+            setCanResendVerification(true);
+          }
           console.error("Server Error:", responseData.error || responseData);
           toast.error(responseData.message || "สมัครสมาชิกไม่สำเร็จ");
         }
@@ -96,13 +100,14 @@ export default function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+    <form onSubmit={handleSubmit(onSubmit)} className="auth-form space-y-4">
       <TextInput
         label="ชื่อผู้ใช้"
         name="username"
         register={register}
         errors={errors}
         className=""
+        classNameInput="auth-input"
       />
 
       <TextInput
@@ -112,6 +117,7 @@ export default function RegisterForm() {
         errors={errors}
         type="email"
         className=""
+        classNameInput="auth-input"
       />
       <TextInput
         label="รหัสผ่าน"
@@ -120,6 +126,7 @@ export default function RegisterForm() {
         errors={errors}
         type="password"
         className=""
+        classNameInput="auth-input"
       />
       {emailErr && (
         <div className="text-sm text-red-600 dark:text-red-400 -mt-3 mb-2">
@@ -131,7 +138,7 @@ export default function RegisterForm() {
           type="button"
           onClick={resendVerificationEmail}
           disabled={resending}
-          className="text-sm text-primary underline disabled:opacity-50"
+          className="auth-link text-sm text-primary disabled:opacity-50"
         >
           {resending ? "กำลังส่งอีเมล..." : "ส่งลิงก์ยืนยันอีกครั้ง"}
         </button>
@@ -141,12 +148,12 @@ export default function RegisterForm() {
           isLoading={loading}
           buttonTitle="ลงทะเบียน"
           LoadingButtonTitle="กําลังสร้างบัญชี..."
-          className="w-full mt-2 sm:text-lg"
+          className="auth-submit mt-2 w-full sm:text-base"
         />
       </div>
 
       <div className="mt-2">
-        <Link href="/forgot-password" className="font-medium text-sm ">
+        <Link href="/forgot-password" className="auth-link text-sm font-medium">
           ลืมรหัสผ่าน
         </Link>
       </div>
@@ -160,7 +167,7 @@ export default function RegisterForm() {
       <div className="flex gap-2 justify-center sm:justify-between">
         <p className="  text-[0.75rem] font-light text-gray-500 dark:text-gray-400">
           มีบัญชีอยู่แล้ว?{" "}
-          <Link href="/login" className="font-medium text-custom-text">
+          <Link href="/login" className="auth-link font-medium text-custom-text">
             เข้าสู่ระบบ
           </Link>
         </p>

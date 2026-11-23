@@ -9,7 +9,7 @@ import { Button } from "../ui/button";
 import { makePutRequest } from "@/lib/apiRequest";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
-import { isLoading } from "@/redux/slices/loadingFullScreenSlice";
+import { branchOptions } from "@/lib/branches";
 
 export default function OnboardingForm({ id }) {
   const [loading, setLoading] = useState(false);
@@ -47,27 +47,23 @@ export default function OnboardingForm({ id }) {
   }, []);
 
   const onSuccess = () => {
-    router.replace("/login");
+    router.replace("/home");
     router.refresh();
   };
 
   const getUser = async () => {
     try {
-      dispatch(isLoading(true));
       const userResponse = await getData(`users/${id}`);
       if (userResponse.status === 500) {
         console.error("ID ของคุณไม่ถูกต้อง");
         toast.error("ID ของคุณไม่ถูกต้อง");
-        dispatch(isLoading(false));
         return;
       }
       reset({
         username: userResponse.username,
         emailAddress: userResponse.email,
       });
-      dispatch(isLoading(false));
     } catch (error) {
-      dispatch(isLoading(false));
       console.error("ID ของคุณไม่ถูกต้อง", error);
       toast.error("ID ของคุณไม่ถูกต้อง");
     }
@@ -119,6 +115,7 @@ export default function OnboardingForm({ id }) {
             name="prefix"
             register={register}
             errors={errors}
+            isRequired
             className="20"
             options={prefix}
           />
@@ -137,6 +134,7 @@ export default function OnboardingForm({ id }) {
               name="educationLevel"
               register={register}
               errors={errors}
+              isRequired
               className="w-16"
               options={educationLevel}
             />
@@ -145,6 +143,7 @@ export default function OnboardingForm({ id }) {
               name="educationYear"
               register={register}
               errors={errors}
+              isRequired
               className="w-16"
               options={availableYears}
             />
@@ -167,6 +166,15 @@ export default function OnboardingForm({ id }) {
           register={register}
           errors={errors}
           className="w-full"
+        />
+        <SelectInput
+          label="สาขาที่เรียน"
+          name="branch"
+          register={register}
+          errors={errors}
+          isRequired
+          className="w-full"
+          options={branchOptions}
         />
       </div>
       <div className="flex justify-end mt-4">

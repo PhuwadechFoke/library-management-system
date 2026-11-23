@@ -3,14 +3,14 @@ import AdminNavbar from "@/components/backoffice/navbar/AdminNavbar";
 
 export default function Layout({ children }) {
   return (
-    <div className="relative ">
-      <AdminNavbar className={"py-2 sm:py-3 px-4 sm:px-36"} />
-      <div className="sm:mx-auto sm:max-w-7xl px-4 mt-4">
-        <div className="lg:grid lg:grid-cols-12 gap-2 w-full border bg-card p-2 rounded-sm">
-          <div className="hidden lg:block lg:col-span-2 relative">
+    <div className="admin-shell relative isolate min-h-screen">
+      <AdminNavbar className="admin-navbar mx-auto max-w-[1600px] border-b border-border/70 px-4 py-3 sm:px-6" />
+      <div className="mx-auto mt-5 max-w-[1600px] px-3 pb-8 sm:px-6">
+        <div className="admin-panel grid w-full min-w-0 gap-4 rounded-3xl border border-border/70 bg-card/65 p-3 shadow-xl shadow-zinc-900/5 backdrop-blur-sm sm:p-4 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-5">
+          <aside className="relative hidden lg:block">
             <AdminSidebar />
-          </div>
-          <div className="lg:col-span-10">{children}</div>
+          </aside>
+          <main className="admin-content min-w-0">{children}</main>
         </div>
       </div>
     </div>

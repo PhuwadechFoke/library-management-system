@@ -1,5 +1,5 @@
 "use client";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -21,18 +21,36 @@ export default function LoginForm() {
   } = useForm();
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
-  const onSuccess = () => {
+  const onSuccess = (destination) => {
     queryClient.invalidateQueries(["userProfile"]);
-    router.push("/home");
+    router.replace(destination);
     router.refresh();
   };
   async function onSubmit(data) {
     try {
       setLoading(true);
       dispatch(isLoading(true));
+      const requestedCallbackUrl = new URLSearchParams(
+        window.location.search
+      ).get("callbackUrl");
+      let destination;
+      if (requestedCallbackUrl) {
+        try {
+          const callbackUrl = new URL(
+            requestedCallbackUrl,
+            window.location.origin
+          );
+          if (callbackUrl.origin === window.location.origin) {
+            destination = `${callbackUrl.pathname}${callbackUrl.search}${callbackUrl.hash}`;
+          }
+        } catch (error) {
+          console.error("Ignoring invalid login callback URL:", error);
+        }
+      }
       console.log("Attempting to sign in with credentials");
       const loginData = await signIn("credentials", {
         ...data,
+        callbackUrl: destination || window.location.origin,
         redirect: false,
       });
       // console.log("SignIn response:", loginData);
@@ -43,15 +61,24 @@ export default function LoginForm() {
         toast.error(`เข้าสู่ระบบไม่สำเร็จ: ${loginData.error}`);
       } 
 
-      else {
+      else if (loginData?.ok) {
         // Sign-in was successful
         reset();
-        router.push("/home");
         setLoading(false);
-        onSuccess()
+        if (!destination) {
+          const session = await getSession();
+          destination = session?.user?.needsOnboarding
+            ? `/onboarding/${session.user.id}`
+            : "/home";
+        }
+        onSuccess(destination)
         
         dispatch(isLoading(false));
         toast.success("เข้าสู่ระบบสำเร็จ");
+      } else {
+        setLoading(false);
+        dispatch(isLoading(false));
+        toast.error("ไม่สามารถเข้าสู่ระบบได้ กรุณาลองอีกครั้ง");
       }
     } catch (error) {
       setLoading(false);
@@ -62,7 +89,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 ">
+    <form onSubmit={handleSubmit(onSubmit)} className="auth-form space-y-4">
       <div>
         <Label htmlFor="email" className="block text-sm font-medium leading-6 mb-1">
           Email
@@ -72,7 +99,7 @@ export default function LoginForm() {
           type="email"
           name="email"
           id="email"
-          className=""
+          className="auth-input"
           placeholder="ใส่ email"
         />
         {errors.email && (
@@ -91,7 +118,7 @@ export default function LoginForm() {
           name="password"
           id="password"
           placeholder="••••••••"
-          className=""
+          className="auth-input"
         />
         {errors.password && (
           <small className="text-red-600 text-sm ">
@@ -101,7 +128,7 @@ export default function LoginForm() {
       </div>
       <div className="">
         {loading ? (
-          <Button disabled type="button" className="w-full mt-2 sm:text-lg">
+          <Button disabled type="button" className="auth-submit mt-2 w-full sm:text-base">
             <svg
               aria-hidden="true"
               role="status"
@@ -122,13 +149,13 @@ export default function LoginForm() {
             กำลังเข้าสู่ระบบ
           </Button>
         ) : (
-          <Button type="submit" className="w-full mt-2 sm:text-lg">
+          <Button type="submit" className="auth-submit mt-2 w-full sm:text-base">
            เข้าสู่ระบบ
           </Button>
         )}
       </div>
       <div className="mt-2">
-        <Link href="/forgot-password" className="font-medium text-sm ">
+        <Link href="/forgot-password" className="auth-link text-sm font-medium">
           ลืมรหัสผ่าน
         </Link>
       </div>
@@ -142,7 +169,7 @@ export default function LoginForm() {
       <div className="flex gap-2 justify-center sm:justify-between">
         <p className="  text-[0.75rem] font-light text-gray-500 dark:text-gray-400">
         ยังไม่ได้เป็นสมาชิก? {" "}
-          <Link href="/register" className="font-medium text-custom-text">
+          <Link href="/register" className="auth-link font-medium text-custom-text">
           สมัครสมาชิก
           </Link>
         </p>

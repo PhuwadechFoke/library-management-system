@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
+import { syncBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,10 @@ export async function POST(request) {
       if (!order) throw new Error("ไม่พบใบสั่งซื้อ");
       if (order.receipt) throw new Error("ใบสั่งซื้อนี้ถูกรับเข้าแล้ว");
       if (order.status !== "CONFIRMED") throw new Error("รับเข้าได้เฉพาะใบสั่งซื้อที่ยืนยันแล้ว");
-      for (const item of order.items) await tx.book.update({ where: { id: item.bookId }, data: { quantity: { increment: item.quantity }, remaining: { increment: item.quantity } } });
+      for (const item of order.items) {
+        await tx.book.update({ where: { id: item.bookId }, data: { quantity: { increment: item.quantity }, remaining: { increment: item.quantity } } });
+        await syncBookAvailabilityStatus(tx, item.bookId);
+      }
       const createdReceipt = await tx.bookReceipt.create({ data: { orderId, receivedById, note: note?.trim() || null } });
       await tx.bookOrder.update({ where: { id: orderId }, data: { status: "COMPLETED" } });
       return createdReceipt;

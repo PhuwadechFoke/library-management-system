@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Building2, CheckCircle2, Layers3 } from "lucide-react";
 import Image from "next/image";
 import React, { useMemo, useState } from "react";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -54,7 +55,7 @@ export default function DepartmentDetailPage({ params: { slug } }) {
             <div>
               <div className="mb-3 inline-flex items-center rounded-full border border-red-200 bg-white/80 px-3 py-1 text-xs font-medium text-red-800 shadow-sm">
                 <Building2 className="mr-2 h-4 w-4" />
-                หนังสือประจำแผนก
+                <LocalizedText value="หนังสือประจำแผนก" />
               </div>
               <h1 className="text-2xl font-bold leading-tight text-zinc-900 sm:text-3xl">
                 {department?.title}
@@ -68,21 +69,21 @@ export default function DepartmentDetailPage({ params: { slug } }) {
                 <div className="rounded-md border bg-white/75 p-3 shadow-sm">
                   <div className="flex items-center text-zinc-500">
                     <BookOpen className="mr-2 h-4 w-4" />
-                    รายการหนังสือ
+                    <LocalizedText value="รายการหนังสือ" />
                   </div>
                   <div className="mt-1 text-2xl font-bold text-red-800">{books.length}</div>
                 </div>
                 <div className="rounded-md border bg-white/75 p-3 shadow-sm">
                   <div className="flex items-center text-zinc-500">
                     <CheckCircle2 className="mr-2 h-4 w-4" />
-                    พร้อมยืม
+                    <LocalizedText value="พร้อมยืม" />
                   </div>
                   <div className="mt-1 text-2xl font-bold text-sky-800">{totalRemaining}</div>
                 </div>
                 <div className="rounded-md border bg-white/75 p-3 shadow-sm">
                   <div className="flex items-center text-zinc-500">
                     <Layers3 className="mr-2 h-4 w-4" />
-                    จำนวนทั้งหมด
+                    <LocalizedText value="จำนวนทั้งหมด" />
                   </div>
                   <div className="mt-1 text-2xl font-bold text-zinc-800">{totalQuantity}</div>
                 </div>
@@ -105,7 +106,7 @@ export default function DepartmentDetailPage({ params: { slug } }) {
 
       <div className="rounded-md border bg-card px-4 py-4">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
-          <h2 className="text-lg font-semibold text-zinc-900">รายการหนังสือในแผนก</h2>
+          <h2 className="text-lg font-semibold text-zinc-900"><LocalizedText value="รายการหนังสือในแผนก" /></h2>
           {!isLoading ? (
             <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
               {books.length} เล่ม

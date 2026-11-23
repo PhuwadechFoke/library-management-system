@@ -3,6 +3,7 @@
 
 import ResetPasswordForm from "@/components/frontend/ResetPasswordForm ";
 import { Info } from "lucide-react";
+import LocalizedText from "@/components/frontend/LocalizedText";
 export const dynamic = "force-dynamic";
 export default function PasswordReset() {
   return (
@@ -15,7 +16,7 @@ export default function PasswordReset() {
         <div className="flex items-center sm:px-10 ">
           <Info className="flex-shrink-0 w-4 h-4 me-2" />
           <span className="sr-only">Info</span>
-          <h3 className="text-xl font-medium">รีเซตรหัสผ่าน</h3>
+          <h3 className="text-xl font-medium"><LocalizedText value="รีเซตรหัสผ่าน" /></h3>
         </div>
         <div className="mt-2 sm:px-10 mb-4 text-sm text-muted-foreground">
           กรอกรหัสผ่านใหม่ของคุณ เราจะอัพเดตรหัสผ่านของคุณให้เป็นปัจจุบัน

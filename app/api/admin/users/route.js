@@ -15,6 +15,9 @@ export async function GET(request) {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        user: { select: { id: true, role: true } },
+      },
     });
 
     if (!userProfiles) {

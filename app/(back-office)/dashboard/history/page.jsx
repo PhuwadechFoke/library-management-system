@@ -8,6 +8,7 @@ import PageHeaderNoAdd from "@/components/backoffice/PageHeaderNoAdd";
 import ExportReportButton from "@/components/backoffice/ExportReportButton";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Page() {
   const { data: borrows, isLoading: isBorrowsLoading } = useQuery({
@@ -17,6 +18,7 @@ export default function Page() {
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [branchFilter, setBranchFilter] = useState("ALL");
 
   const statuses = [
     { value: "ALL", label: "ทั้งหมด" },
@@ -28,9 +30,27 @@ export default function Page() {
 
   const filteredBorrows = useMemo(() => {
     if (!borrows) return [];
-    if (statusFilter === "ALL") return borrows;
-    return borrows.filter((b) => b.status === statusFilter);
-  }, [borrows, statusFilter]);
+    return borrows.filter((borrow) => {
+      const matchesStatus =
+        statusFilter === "ALL" || borrow.status === statusFilter;
+      const matchesBranch =
+        branchFilter === "ALL" || borrow.borrower?.branch === branchFilter;
+      return matchesStatus && matchesBranch;
+    });
+  }, [borrows, statusFilter, branchFilter]);
+
+  const branches = useMemo(
+    () =>
+      [
+        ...new Set(
+          (borrows || [])
+            .map((borrow) => borrow.borrower?.branch)
+            .filter(Boolean)
+        ),
+      ]
+        .sort((a, b) => a.localeCompare(b, "th")),
+    [borrows]
+  );
 
   return (
     <div>
@@ -40,10 +60,15 @@ export default function Page() {
           data={filteredBorrows}
           filenamePrefix="รายงานการยืม"
         />
+        <Link href="/dashboard/reservations">
+          <Button size="sm" variant="outline">
+            จัดการการจอง
+          </Button>
+        </Link>
       </PageHeaderNoAdd>
 
       {/* Status filter buttons */}
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         {statuses.map((s) => (
           <Button
             key={s.value}
@@ -54,14 +79,41 @@ export default function Page() {
             {s.label}
             {s.value !== "ALL" && borrows && (
               <span className="ml-1 text-xs opacity-70">
-                ({borrows.filter((b) => b.status === s.value).length})
+                ({borrows.filter((b) =>
+                  (branchFilter === "ALL" || b.borrower?.branch === branchFilter) &&
+                  b.status === s.value
+                ).length})
               </span>
             )}
             {s.value === "ALL" && borrows && (
-              <span className="ml-1 text-xs opacity-70">({borrows.length})</span>
+              <span className="ml-1 text-xs opacity-70">
+                ({borrows.filter((b) =>
+                  branchFilter === "ALL" || b.borrower?.branch === branchFilter
+                ).length})
+              </span>
             )}
           </Button>
         ))}
+        <label className="flex items-center gap-2 text-sm">
+          <span>สาขา</span>
+          <select
+            aria-label="กรองรายการคืนตามสาขา"
+            className="h-9 min-w-40 rounded-md border border-input bg-background px-3 text-sm"
+            value={branchFilter}
+            onChange={(event) => {
+              const branch = event.target.value;
+              setBranchFilter(branch);
+              if (branch !== "ALL") setStatusFilter("RETURNED");
+            }}
+          >
+            <option value="ALL">ทุกสาขา</option>
+            {branches.map((branch) => (
+              <option key={branch} value={branch}>
+                {branch}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="py-2">

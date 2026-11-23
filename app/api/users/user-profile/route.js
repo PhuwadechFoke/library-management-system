@@ -1,5 +1,7 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/authOptions";
 
 export async function PUT(request) {
   try {
@@ -13,32 +15,32 @@ export async function PUT(request) {
       phoneNumber,
       educationLevel,
       educationYear,
+      branch,
       description = "",
       profileImage = "",
       userId,
     } = await request.json();
 
-    const existingUser = await db.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    if (!existingUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
       return NextResponse.json(
-        {
-          data: null,
-          message: "ไม่พบผู้ใช้งาน",
-        },
-        { status: 404 }
+        { message: "กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล" },
+        { status: 401 }
+      );
+    }
+    if (session.user.id !== userId) {
+      return NextResponse.json(
+        { message: "ไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้งานนี้" },
+        { status: 403 }
       );
     }
 
-    const existingUserprofile = await db.userProfile.findUnique({
+    const existingUserProfile = await db.userProfile.findUnique({
       where: {
         userId,
       },
     });
-    if (!existingUserprofile) {
+    if (!existingUserProfile) {
       return NextResponse.json(
         {
           data: null,
@@ -48,35 +50,29 @@ export async function PUT(request) {
       );
     }
 
-    const updateEmailVerified = await db.user.update({
-      where: {
-        id: existingUser.id,
-      },
-      data: {
-        emailVerified: true,
-        username,
-        email: emailAddress,
-      },
+    const updatedUserProfile = await db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: { username, email: emailAddress },
+      });
+      return tx.userProfile.update({
+        where: { userId },
+        data: {
+          username,
+          emailAddress,
+          prefix,
+          fullName,
+          codeNumber,
+          phoneNumber,
+          educationLevel,
+          educationYear,
+          branch,
+          description,
+          profileImage,
+        },
+      });
     });
 
-    const updatedUserProfile = await db.userProfile.update({
-      where: {
-        userId: existingUser.id,
-      },
-      data: {
-        username,
-        emailAddress,
-        prefix,
-        fullName,
-        codeNumber,
-        phoneNumber,
-        educationLevel,
-        educationYear,
-        description,
-        profileImage,
-      },
-    });
-    console.log(updateEmailVerified);
     return NextResponse.json(updatedUserProfile);
   } catch (error) {
     console.log(error);

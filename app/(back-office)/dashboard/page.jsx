@@ -1,6 +1,7 @@
 "use client";
 import { BarChartDemo } from "@/components/backoffice/dashboard/BarChart";
 import HeadDashboard from "@/components/backoffice/dashboard/HeadDashboard";
+import LowStockBooks from "@/components/backoffice/dashboard/LowStockBooks";
 import RecentBorrows from "@/components/backoffice/dashboard/RecentBorrows";
 import PageHeaderNoAdd from "@/components/backoffice/PageHeaderNoAdd";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,6 +40,14 @@ export default function page() {
   } = useQuery({
     queryKey: ["admin_reservations_dashboard"],
     queryFn: () => getData("admin/reservations"),
+  });
+  const {
+    data: books,
+    isLoading: isBooksLoading,
+    error: booksError,
+  } = useQuery({
+    queryKey: ["books"],
+    queryFn: () => getData("admin/books"),
   });
 
   const quantity = totalQuantity?.totalQuantity || 0;
@@ -79,6 +88,9 @@ export default function page() {
             />
           </div>
         )}
+        <div className="mt-4">
+          <LowStockBooks books={books} isLoading={isBooksLoading} error={booksError} />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div className="sm:col-span-1">
             <BarChartDemo />

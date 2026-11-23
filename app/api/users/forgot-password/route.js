@@ -45,7 +45,10 @@ export async function PUT(request) {
     const linkText = "เปลี่ยนรหัสผ่านของคุณ";
     const description = "โปรดยืนยันรหัสผ่านใหม่ของคุณ";
     const name = existingUser.name;
-    const redirectUrl = `/reset-password?token=${token}&id=${userId}`;
+    const redirectUrl = new URL(
+      `/reset-password?token=${encodeURIComponent(token)}&id=${encodeURIComponent(userId)}`,
+      request.url
+    ).toString();
 
     const transporter = nodemailer.createTransport({
       service: "gmail",

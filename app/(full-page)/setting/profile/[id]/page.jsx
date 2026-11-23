@@ -18,6 +18,8 @@ import { useDispatch } from "react-redux";
 import { queryClient } from "@/lib/react-query-client";
 import { useQuery } from "@tanstack/react-query";
 import { isLoading } from "@/redux/slices/loadingFullScreenSlice";
+import { branchOptions } from "@/lib/branches";
+import LocalizedText from "@/components/frontend/LocalizedText";
 export default function SettingProfile({ params: { id } }) {
   const dispatch = useDispatch();
 
@@ -141,7 +143,7 @@ export default function SettingProfile({ params: { id } }) {
             <div className="w-full md:mt-0 sm:max-w-xl">
               <div className="px-10 py-10 space-y-4 md:space-y-6 sm:p-8">
                 <h1 className=" text-lg sm:text-2xl font-bold leading-tight tracking-tight text-center mb-6 sm:mb-6">
-                  ตั้งค่าโปรไฟล์
+                  <LocalizedText value="profile.settingsTitle" />
                 </h1>
                 <form>
                   <div className="grid gap-2 sm:gap-x-10 sm:gap-y-4">
@@ -213,6 +215,14 @@ export default function SettingProfile({ params: { id } }) {
                       register={register}
                       errors={errors}
                       className="w-full"
+                    />
+                    <SelectInput
+                      label="สาขาที่เรียน"
+                      name="branch"
+                      register={register}
+                      errors={errors}
+                      className="w-full"
+                      options={branchOptions}
                     />
                     <TextAreaInput
                       label="รายละเอียด"

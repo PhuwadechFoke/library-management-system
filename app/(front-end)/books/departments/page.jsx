@@ -8,6 +8,7 @@ import { ArrowRight, BookOpen, Building2, LibraryBig } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 const fallbackImages = ["/Bibliophile-amico.png", "/Bibliophile-bro.png"];
 
@@ -35,10 +36,10 @@ export default function DepartmentsPage() {
           <div>
             <div className="mb-3 inline-flex items-center rounded-full border border-red-200 bg-white/80 px-3 py-1 text-xs font-medium text-red-800 shadow-sm">
               <Building2 className="mr-2 h-4 w-4" />
-              Department Books
+              <LocalizedText value="admin.departmentBooks" />
             </div>
             <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl">
-              หนังสือของแผนก
+              <LocalizedText value="หนังสือของแผนก" />
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
               เลือกดูหนังสือตามแผนก พร้อมจำนวนหนังสือ รายละเอียด และรายการหนังสือที่พร้อมให้ยืม

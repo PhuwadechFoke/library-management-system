@@ -14,14 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function DataTablePagination({ table }) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center justify-end px-2">
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
         
-          <p className="hidden sm:block text-sm font-medium">รายการ</p>
+          <p className="hidden sm:block text-sm font-medium">{t("common.rowsPerPage")}</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
@@ -41,7 +43,7 @@ export function DataTablePagination({ table }) {
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          หน้า {table.getState().pagination.pageIndex + 1} ถึง{" "}
+          {t("common.page")} {table.getState().pagination.pageIndex + 1} {t("common.of")}{" "}
           {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">

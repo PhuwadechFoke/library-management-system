@@ -51,6 +51,7 @@ export async function PUT(request, { params: { id } }) {
       phoneNumber,
       educationLevel,
       educationYear,
+      branch,
       description = "",
       profileImage = "",
     } = await request.json();
@@ -82,6 +83,7 @@ export async function PUT(request, { params: { id } }) {
         phoneNumber,
         educationLevel,
         educationYear,
+        branch,
         description,
         profileImage,
       },

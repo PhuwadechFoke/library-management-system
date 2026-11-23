@@ -23,7 +23,7 @@ export default function Page() {
 
   });
   if (error) {
-    <div className=""> Error: {error.message}</div>;
+    return <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">เกิดข้อผิดพลาดในการโหลดหนังสือ: {error.message}</div>;
   }
   const totalPages = books ? Math.ceil(books.length / ITEMS_PER_PAGE) : 0;
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -37,7 +37,7 @@ export default function Page() {
   return (
     <div className="">
       <HeadTitleBreadcrumb icon={BookText} />
-      <div className="border bg-card py-2 px-4 rounded-sm">
+      <div className="rounded-2xl border border-border/70 bg-card/80 p-3 shadow-sm backdrop-blur-sm sm:p-5">
         <HorizontalCard books={currentBooks} isLoading={isLoading} />{" "}
         {/* ใช้ currentBooks แทน books */}
         {totalPages > 1 ? (

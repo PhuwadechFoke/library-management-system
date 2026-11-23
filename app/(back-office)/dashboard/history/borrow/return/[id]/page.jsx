@@ -12,6 +12,7 @@ import { Label } from "@radix-ui/react-label";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import FineReceiptModal from "@/components/backoffice/FineReceiptModal";
+import LocalizedText from "@/components/frontend/LocalizedText";
 moment.locale("th");
 
 export default function Page({ params: { id } }) {
@@ -62,7 +63,7 @@ export default function Page({ params: { id } }) {
     <div>
       <div className="">
         <div className="flex justify-between items-center py-4 sm:py-6 px-6 border rounded-sm sm:px-12 mb-2 ">
-          <h2 className=" text-xl font-semibold">รายละเอียดการคืนหนังสือ</h2>
+          <h2 className=" text-xl font-semibold"><LocalizedText value="รายละเอียดการคืนหนังสือ" /></h2>
           <div className="flex items-center gap-2">
             {totalFine > 0 && (
               <Button
@@ -249,6 +250,9 @@ export default function Page({ params: { id } }) {
                   <strong>ระดับการศึกษา :</strong>{" "}
                   {borrow?.borrower?.educationLevel ?? ""}{" "}
                   {borrow?.borrower?.educationYear ?? ""}
+                </p>
+                <p>
+                  <strong>สาขา :</strong> {borrow?.borrower?.branch ?? "-"}
                 </p>
               </div>
             </div>

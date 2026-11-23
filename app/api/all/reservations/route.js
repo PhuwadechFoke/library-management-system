@@ -2,6 +2,7 @@ import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { canReserveBook } from "@/lib/reservationValidation.mjs";
 import { createNotification, notifyAdmins } from "@/lib/notifications";
+import { syncBookAvailabilityStatus } from "@/lib/bookAvailability";
 
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
@@ -32,14 +33,15 @@ export async function POST(request) {
     }
 
     const result = await db.$transaction(async (tx) => {
-      const updatedBook = await tx.book.update({
-        where: { id: bookId },
-        data: {
-          remaining: {
-            decrement: 1,
-          },
-        },
+      const stockUpdate = await tx.book.updateMany({
+        where: { id: bookId, active: true, remaining: { gt: 0 } },
+        data: { remaining: { decrement: 1 } },
       });
+      if (stockUpdate.count === 0) {
+        throw new Error("หนังสือเล่มนี้ไม่สามารถจองได้ในขณะนี้");
+      }
+
+      const updatedBook = await syncBookAvailabilityStatus(tx, bookId);
 
       const reservation = await tx.reservation.create({
         data: {
@@ -86,6 +88,10 @@ export async function POST(request) {
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "เกิดข้อผิดพลาดในการจองหนังสือ" }, { status: 500 });
+    const unavailable = error.message === "หนังสือเล่มนี้ไม่สามารถจองได้ในขณะนี้";
+    return NextResponse.json(
+      { message: unavailable ? error.message : "เกิดข้อผิดพลาดในการจองหนังสือ" },
+      { status: unavailable ? 409 : 500 }
+    );
   }
 }

@@ -7,30 +7,33 @@ import HamburgerMenu from "./HamburgerMenu";
 import { NavAvatar } from "./NavAvatar";
 import NotificationBell from "./NotificationBell";
 import SwitchTheme from "@/components/SwitchTheme";
+import LanguageSwitcher from "@/components/frontend/LanguageSwitcher";
 import { SparklesTextDemo } from "../SparklesTextDemo";
 import { CommandDialogDemo } from "../CommandDialogDemo";
 import { Button } from "@/components/ui/button";
+import LocalizedText from "@/components/frontend/LocalizedText";
 
 export default async function Navbar({ className }) {
   const session = await getServerSession(authOptions);
 
   return (
     <div
-      className={`flex justify-between sticky top-0 backdrop-blur-xl z-40 w-full ${className}`}
+      className={`sticky top-0 z-40 flex w-full items-center justify-between bg-background/80 backdrop-blur-xl ${className}`}
     >
-      <div className="block lg:hidden">
-        <HamburgerMenu />
-      </div>
-      <Link href="/home" className="text-3xl flex items-center gap-2">
-        <BookOpen width={26} height={26} className="text-custom-text" />
+      <Link href="/home" className="flex min-w-0 items-center gap-2.5">
+        <BookOpen width={24} height={24} className="shrink-0 text-custom-text" />
         <SparklesTextDemo text={"LMS"} />
+        <span className="text-xs font-semibold leading-tight text-custom-text sm:text-sm">
+          วิทยาลัยอาชีวศึกษาอุดรธานี
+        </span>
       </Link>
-    <div className="text-3xl flex items-center justify-center gap-1 sm:gap-4">
+    <div className="flex shrink-0 items-center justify-center gap-1 sm:gap-3">
         <CommandDialogDemo />
+        <LanguageSwitcher customClass={"hidden sm:block"} />
         <SwitchTheme customClass={"hidden sm:block"} />
         {!session ? (
           <Link href="/login" className="flex items-center">
-            <Button>Login</Button>
+            <Button><LocalizedText value="auth.login" /></Button>
           </Link>
         ) : (
           <div className="flex items-center gap-2">
@@ -38,6 +41,9 @@ export default async function Navbar({ className }) {
             <NavAvatar session={session} />
           </div>
         )}
+        <div className="ml-1 block lg:hidden">
+          <HamburgerMenu />
+        </div>
       </div>
     </div>
   );

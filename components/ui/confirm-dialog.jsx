@@ -2,6 +2,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ConfirmDialog({
   open,
@@ -13,6 +14,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }) {
+  const { t } = useLanguage();
   if (!open) return null;
 
   return (
@@ -41,16 +43,16 @@ export default function ConfirmDialog({
             />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold">{title}</h3>
+            <h3 className="text-lg font-semibold">{t(title)}</h3>
             {description && (
-              <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t(description)}</p>
             )}
           </div>
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="outline" onClick={onCancel}>
-            {cancelText}
+            {t(cancelText)}
           </Button>
           <Button
             className={
@@ -60,7 +62,7 @@ export default function ConfirmDialog({
             }
             onClick={onConfirm}
           >
-            {confirmText}
+            {t(confirmText)}
           </Button>
         </div>
       </div>

@@ -1,6 +1,14 @@
 "use client";
 import HeadTitleBreadcrumb from "@/components/frontend/HeadTitleBreadcrumb";
-import { Album, Clock, BookOpen, Trash2 } from "lucide-react";
+import {
+  Album,
+  BadgeCheck,
+  BookOpen,
+  Clock,
+  History,
+  LibraryBig,
+  Trash2,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import DataTable from "@/components/backoffice/data-table-components/DataTable";
@@ -15,9 +23,11 @@ import { th } from "date-fns/locale";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import LocalizedText from "@/components/frontend/LocalizedText";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function page() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const userId = session?.user?.id;
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -71,45 +81,124 @@ export default function page() {
     }
   };
 
+  const borrowRecords = Array.isArray(borrows) ? borrows : [];
+  const reservationRecords = Array.isArray(reservations) ? reservations : [];
+  const borrowedCount = borrowRecords.filter(
+    (borrow) => !borrow.isReturned && borrow.status === "BORROWED"
+  ).length;
+  const overdueCount = borrowRecords.filter(
+    (borrow) => !borrow.isReturned && borrow.status === "OVERDUE"
+  ).length;
+  const returnedCount = borrowRecords.filter(
+    (borrow) => borrow.isReturned || borrow.status === "RETURNED"
+  ).length;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 pb-6">
       <HeadTitleBreadcrumb icon={Album} />
 
-      {/* ส่วนรายการจองที่รอดำเนินการ */}
-      <div className="border bg-card py-3 px-4 rounded-sm">
-        <div className="flex items-center gap-2 pb-2 mb-3 border-b">
-          <Clock className="h-4 w-4 text-amber-500" />
-          <h2 className="font-semibold text-sm">รายการจองที่รอดำเนินการ</h2>
-          {reservations && reservations.length > 0 && (
-            <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-semibold px-2 py-0.5 rounded-full">
-              {reservations.length} รายการ
+      <section className="relative isolate overflow-hidden rounded-3xl border border-red-950/10 bg-gradient-to-br from-white via-orange-50/70 to-red-50/80 p-5 shadow-sm dark:border-white/10 dark:from-zinc-900 dark:via-zinc-900 dark:to-red-950/25 sm:p-6">
+        <div className="pointer-events-none absolute -right-12 -top-20 -z-10 h-56 w-56 rounded-full border border-red-900/10 dark:border-white/10" />
+        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-red-900/10 bg-white/70 px-3 py-1 text-xs font-semibold text-red-800 shadow-sm dark:border-white/10 dark:bg-zinc-900/70 dark:text-red-200">
+          <LibraryBig className="h-3.5 w-3.5" />
+          <LocalizedText value="myBooks.overview" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <LocalizedText value="nav.myBooks" />
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          <LocalizedText value="myBooks.description" />
+        </p>
+
+        <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <SummaryCard
+            icon={History}
+            label="myBooks.borrowHistory"
+            value={borrowRecords.length}
+            tone="red"
+            loading={isBorrowsLoading}
+          />
+          <SummaryCard
+            icon={BookOpen}
+            label="myBooks.currentlyBorrowed"
+            value={borrowedCount}
+            tone="blue"
+            loading={isBorrowsLoading}
+          />
+          <SummaryCard
+            icon={Clock}
+            label="myBooks.overdue"
+            value={overdueCount}
+            tone="amber"
+            loading={isBorrowsLoading}
+          />
+          <SummaryCard
+            icon={BadgeCheck}
+            label="myBooks.returned"
+            value={returnedCount}
+            tone="green"
+            loading={isBorrowsLoading}
+          />
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/85 p-4 shadow-sm backdrop-blur-sm sm:p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+              <Clock className="h-5 w-5" />
             </span>
-          )}
+            <div>
+              <h2 className="font-semibold">
+                <LocalizedText value="รายการจองที่รอดำเนินการ" />
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                <LocalizedText value="myBooks.reservationDescription" />
+              </p>
+            </div>
+          </div>
+          <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+            {isReservationsLoading ? "…" : reservationRecords.length}{" "}
+            <LocalizedText value="common.items" />
+          </span>
         </div>
 
         {isReservationsLoading ? (
-          <Skeleton className="w-full h-24" />
-        ) : !reservations || reservations.length === 0 ? (
-          <div className="py-6 text-center text-sm text-muted-foreground">
-            ไม่มีรายการจองที่รอดำเนินการ
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton key={index} className="h-32 rounded-2xl" />
+            ))}
+          </div>
+        ) : reservationRecords.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/15 px-4 py-8 text-center">
+            <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-300">
+              <BookOpen className="h-5 w-5" />
+            </span>
+            <p className="text-sm font-medium">
+              <LocalizedText value="myBooks.noPendingReservations" />
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              <LocalizedText value="myBooks.reservationEmptyHint" />
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {reservations.map((reservation) => (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {reservationRecords.map((reservation) => (
               <div
                 key={reservation.id}
-                className="flex gap-3 p-3 border rounded-sm bg-muted/30 hover:bg-muted/50 transition-colors relative group"
+                className="group relative flex gap-3 overflow-hidden rounded-2xl border border-border/70 bg-background/70 p-3 transition-all duration-300 hover:-translate-y-1 hover:border-amber-500/30 hover:bg-background hover:shadow-lg"
               >
+                <span className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-amber-500/70 opacity-0 transition-opacity group-hover:opacity-100" />
                 {reservation.book?.imageUrl ? (
                   <Image
                     src={reservation.book.imageUrl}
                     width={60}
                     height={60}
                     alt={reservation.book.title || "Book"}
-                    className="rounded-sm object-cover w-14 h-20 flex-shrink-0"
+                    className="h-20 w-14 shrink-0 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-[1.03]"
                   />
                 ) : (
-                  <div className="w-14 h-20 bg-muted rounded-sm flex items-center justify-center flex-shrink-0">
+                  <div className="flex h-20 w-14 shrink-0 items-center justify-center rounded-xl bg-muted">
                     <BookOpen className="w-6 h-6 text-muted-foreground" />
                   </div>
                 )}
@@ -124,10 +213,11 @@ export default function page() {
                   </div>
                   <div>
                     <span className="text-xs text-amber-600 dark:text-amber-400 font-medium block">
-                      ต้องการยืม {reservation.numberOfDays} วัน
+                      <LocalizedText value="myBooks.borrowFor" />{" "}
+                      {reservation.numberOfDays} <LocalizedText value="stats.days" />
                     </span>
                     <p className="text-[10px] text-muted-foreground">
-                      จองเมื่อ{" "}
+                      <LocalizedText value="myBooks.reservedAt" />{" "}
                       {formatDistanceToNow(new Date(reservation.createdAt), {
                         addSuffix: true,
                         locale: th,
@@ -138,7 +228,7 @@ export default function page() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50 px-2"
+                      className="h-8 rounded-lg px-2 text-xs text-red-600 transition-all hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/50"
                       onClick={() => setCancelTarget(reservation)}
                     >
                       <Trash2 className="w-3.5 h-3.5 mr-1" />
@@ -150,22 +240,41 @@ export default function page() {
             ))}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* ส่วนประวัติการยืม */}
-      <div className="border bg-card py-2 px-4 rounded-sm">
-        <div className="py-2">
+      <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/85 p-4 shadow-sm backdrop-blur-sm sm:p-5">
+        <div className="mb-4 flex items-center justify-between gap-3 border-b border-border/60 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-800/10 text-red-800 dark:bg-red-300/10 dark:text-red-300">
+              <History className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="font-semibold">
+                <LocalizedText value="myBooks.borrowHistory" />
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                <LocalizedText value="myBooks.historyDescription" />
+              </p>
+            </div>
+          </div>
+          {!isBorrowsLoading && (
+            <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+              {borrowRecords.length} <LocalizedText value="common.items" />
+            </span>
+          )}
+        </div>
+        <div className="min-w-0">
           {isBorrowsLoading || !borrows ? (
-            <Skeleton className="w-full h-96 mb-2" />
+            <Skeleton className="h-72 w-full rounded-2xl" />
           ) : (
             <DataTable
-              data={borrows}
+              data={borrowRecords}
               columns={columns}
               filterKeys={["bookTitle", "dueDate"]}
             />
           )}
         </div>
-      </div>
+      </section>
 
       {/* Dialog ยืนยันยกเลิกการจอง */}
       <ConfirmDialog
@@ -177,6 +286,43 @@ export default function page() {
         onConfirm={handleCancelReservation}
         onCancel={() => setCancelTarget(null)}
       />
+    </div>
+  );
+}
+
+function SummaryCard({ icon: Icon, label, value, tone, loading }) {
+  const { t } = useLanguage();
+  const tones = {
+    red: "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300",
+    blue: "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300",
+    amber:
+      "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
+    green:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300",
+  };
+
+  return (
+    <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md sm:p-4">
+      <div className="absolute -right-4 -top-5 h-16 w-16 rounded-full bg-foreground/[0.03] transition-transform duration-300 group-hover:scale-150" />
+      <div className="relative flex items-center gap-3">
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${tones[tone]} sm:h-10 sm:w-10`}
+        >
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="line-clamp-1 text-[11px] font-medium text-muted-foreground sm:text-xs">
+            {t(label)}
+          </p>
+          <p
+            className={`mt-0.5 text-xl font-bold tracking-tight sm:text-2xl ${
+              loading ? "animate-pulse text-muted-foreground/60" : ""
+            }`}
+          >
+            {loading ? "—" : value.toLocaleString()}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
