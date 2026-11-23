@@ -1,72 +1,71 @@
-import React from "react";
-import Link from "next/link";
+"use client";
+
+import {
+  BookCopy,
+  BookOpenCheck,
+  BookUp,
+  ClipboardList,
+} from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+
+const metrics = [
+  {
+    key: "dashboard.totalCopies",
+    valueKey: "quantity",
+    icon: BookCopy,
+    tone: "text-sky-700 bg-sky-500/10 dark:text-sky-300",
+  },
+  {
+    key: "dashboard.availableCopies",
+    valueKey: "remaining",
+    icon: BookOpenCheck,
+    tone: "text-emerald-700 bg-emerald-500/10 dark:text-emerald-300",
+  },
+  {
+    key: "dashboard.currentBorrows",
+    valueKey: "activeBorrows",
+    icon: BookUp,
+    tone: "text-violet-700 bg-violet-500/10 dark:text-violet-300",
+  },
+  {
+    key: "dashboard.pendingReservations",
+    valueKey: "pendingReservations",
+    icon: ClipboardList,
+    tone: "text-amber-700 bg-amber-500/10 dark:text-amber-300",
+  },
+];
 
 export default function HeadDashboard({
   quantity,
   remaining,
-  totalBooks,
-  totalActive,
-  borrowCount,
-  pendingReservations = 0,
+  activeBorrows,
+  pendingReservations,
 }) {
   const { t } = useLanguage();
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-      <div className="group w-full rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
-        <div className="flex justify-center">
-          <div className="text-center">
-            <h1 className="text-sm font-medium">{t("books.total")}</h1>
-            <div className="text-3xl font-bold m-2">
-              {quantity.toLocaleString()}
-            </div>
-            <div>{t("books.unit")}</div>
-          </div>
-        </div>
-      </div>
-      <div className="group w-full rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
-        <div className="flex justify-center">
-          <div className="text-center">
-            <h1 className="text-sm font-medium">{t("books.remaining")}</h1>
-            <div className="text-3xl font-bold m-2">
-              {remaining.toLocaleString()}
-            </div>
-            <div>{t("books.unit")}</div>
-          </div>
-        </div>
-      </div>
+  const values = { quantity, remaining, activeBorrows, pendingReservations };
 
-      <div className="group w-full rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
-        <div className="flex justify-center">
-          <div className="text-center">
-            <h1 className="text-sm font-medium">{t("books.borrowed")}</h1>
-            <div className="text-3xl font-bold m-2">{borrowCount}</div>
-            <div>{t("books.unit")}</div>
+  return (
+    <section
+      aria-label={t("dashboard.overview")}
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
+    >
+      {metrics.map(({ key, valueKey, icon: Icon, tone }) => (
+        <article
+          key={key}
+          className="group rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-5"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-muted-foreground">{t(key)}</p>
+            <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}>
+              <Icon className="h-5 w-5" aria-hidden="true" />
+            </span>
           </div>
-        </div>
-      </div>
-      <div className="group w-full rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
-        <div className="flex justify-center">
-          <div className="text-center">
-            <h1 className="text-sm font-medium">{t("books.available")}</h1>
-            <div className="text-3xl font-bold m-2">
-              {totalActive.toLocaleString()} <span className="text-lg sm:text-3xl">/</span> {totalBooks.toLocaleString()}
-            </div>
-            <div>{t("books.unit")}</div>
-          </div>
-        </div>
-      </div>
-      <Link href="/dashboard/reservations" className="w-full cursor-pointer rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:bg-amber-500/20 hover:shadow-md">
-        <div className="flex justify-center">
-          <div className="text-center">
-            <h1 className="text-sm font-medium text-amber-600 dark:text-amber-400">{t("admin.pendingReservations")}</h1>
-            <div className="text-3xl font-bold m-2 text-amber-600 dark:text-amber-400">
-              {pendingReservations}
-            </div>
-            <div className="text-amber-600 dark:text-amber-400">{t("common.items")}</div>
-          </div>
-        </div>
-      </Link>
-    </div>
+          <p className="mt-3 text-3xl font-bold tracking-tight">
+            {Number(values[valueKey] || 0).toLocaleString()}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("books.unit")}</p>
+        </article>
+      ))}
+    </section>
   );
 }

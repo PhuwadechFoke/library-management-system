@@ -1,8 +1,8 @@
 "use client";
-import { BarChartDemo } from "@/components/backoffice/dashboard/BarChart";
 import HeadDashboard from "@/components/backoffice/dashboard/HeadDashboard";
 import LowStockBooks from "@/components/backoffice/dashboard/LowStockBooks";
 import RecentBorrows from "@/components/backoffice/dashboard/RecentBorrows";
+import TodayTasks from "@/components/backoffice/dashboard/TodayTasks";
 import PageHeaderNoAdd from "@/components/backoffice/PageHeaderNoAdd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/lib/getData";
@@ -27,19 +27,20 @@ export default function page() {
     queryFn: () => getData("admin/books/total-remaining"),
   });
   const {
-    data: totalActiveBooks,
-    isLoading: isTotalActiveBooksLoading,
-    errorTotalActiveBooks,
-  } = useQuery({
-    queryKey: ["totalActiveBooks"],
-    queryFn: () => getData("admin/books/total-active"),
-  });
-  const {
     data: reservations,
     isLoading: isReservationsLoading,
+    error: reservationsError,
   } = useQuery({
-    queryKey: ["admin_reservations_dashboard"],
+    queryKey: ["reservations"],
     queryFn: () => getData("admin/reservations"),
+  });
+  const {
+    data: borrows,
+    isLoading: isBorrowsLoading,
+    error: borrowsError,
+  } = useQuery({
+    queryKey: ["borrows"],
+    queryFn: () => getData("admin/borrows"),
   });
   const {
     data: books,
@@ -52,16 +53,20 @@ export default function page() {
 
   const quantity = totalQuantity?.totalQuantity || 0;
   const remaining = totalRemaining?.totalRemaining || 0;
-  const totalBooks = totalActiveBooks?.totalBooks || 0;
-  const totalActive = totalActiveBooks?.totalActiveBooks || 0;
-  const borrowCount = quantity - remaining || 0;
-  const pendingReservations = Array.isArray(reservations)
-    ? reservations.filter((r) => !r.isRead).length
+  const activeBorrows = Array.isArray(borrows)
+    ? borrows.filter(
+        (borrow) =>
+          !borrow.isReturned &&
+          borrow.status !== "RETURNED" &&
+          borrow.status !== "LOST"
+      ).length
     : 0;
+  const pendingReservations = Array.isArray(reservations) ? reservations.length : 0;
 
   if (errorTotalQuantity) return <div>{errorTotalQuantity.message}</div>;
   if (errorRemaining) return <div>{errorRemaining.message}</div>;
-  if (errorTotalActiveBooks) return <div>{errorTotalActiveBooks.message}</div>;
+  if (borrowsError) return <div>{borrowsError.message}</div>;
+  if (reservationsError) return <div>{reservationsError.message}</div>;
 
   return (
     <div className="px-4 sm:px-0">
@@ -70,34 +75,34 @@ export default function page() {
       <div className="">
         {isTotalQuantityLoading ||
         isTotalRemainingLoading ||
-        isTotalActiveBooksLoading ||
         isReservationsLoading ||
+        isBorrowsLoading ||
         !totalQuantity ||
-        !totalRemaining ||
-        !totalActiveBooks ? (
+        !totalRemaining ? (
           <Skeleton className="w-full h-32 mt-4 " />
         ) : (
           <div className="mt-4">
             <HeadDashboard
               quantity={quantity}
               remaining={remaining}
-              totalBooks={totalBooks}
-              totalActive={totalActive}
-              borrowCount={borrowCount}
+              activeBorrows={activeBorrows}
               pendingReservations={pendingReservations}
             />
           </div>
         )}
         <div className="mt-4">
+          <TodayTasks
+            borrows={borrows}
+            reservations={reservations}
+            isLoading={isBorrowsLoading || isReservationsLoading}
+            error={borrowsError || reservationsError}
+          />
+        </div>
+        <div className="mt-4">
           <LowStockBooks books={books} isLoading={isBooksLoading} error={booksError} />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          <div className="sm:col-span-1">
-            <BarChartDemo />
-          </div>
-          <div className="sm:col-span-1">
-            <RecentBorrows />
-          </div>
+        <div className="mt-4">
+          <RecentBorrows />
         </div>
       </div>
     </div>
