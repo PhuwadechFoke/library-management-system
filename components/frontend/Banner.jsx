@@ -13,14 +13,14 @@ import { Button } from "@/components/ui/button";
 
 const slides = [
   {
-    imageUrl: "/Bibliophile-amico.png",
+    imageUrl: "/banner-library.svg",
     title: "banner.title",
     description: "banner.description",
     tag: "Library Management",
     accent: "from-red-50 via-white to-orange-50",
   },
   {
-    imageUrl: "/Bibliophile-bro.png",
+    imageUrl: "/banner-reading.svg",
     title: "banner.reading",
     description: "banner.newBooks",
     tag: "New Books",
@@ -102,7 +102,7 @@ export default function Banner() {
                 <div className="absolute bottom-2 h-16 w-4/5 rounded-[50%] bg-zinc-900/10 blur-2xl sm:bottom-3 sm:h-24" />
                 <Image
                   src={slide.imageUrl}
-                  alt={`Banner ${i + 1}`}
+                  alt={i === 0 ? "Interior of a welcoming college library" : "Student enjoying a book"}
                   width={720}
                   height={560}
                   priority={i === 0}

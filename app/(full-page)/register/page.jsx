@@ -12,12 +12,12 @@ export default function Register() {
             <div className="auth-orb auth-orb-two" />
             <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-8">
               <Image
-                src="/Bibliophile-amico.png"
+                src="/library-reading.svg"
                 className="auth-float w-full max-w-md object-contain drop-shadow-2xl"
                 priority
                 width={600}
                 height={600}
-                alt="Bibliophile-amico"
+                alt="Students reading in a welcoming college library"
               />
               <div className="mt-2 h-1 w-20 rounded-full bg-white/40" />
             </div>

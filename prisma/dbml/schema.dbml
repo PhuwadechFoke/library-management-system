@@ -229,6 +229,7 @@ Table BookReceipt {
 
 Enum UserRole {
   ADMIN
+  LIBRARIAN
   USER
 }
 

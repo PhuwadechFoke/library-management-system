@@ -11,12 +11,12 @@ export default function page({ params: { id } }) {
           <div className="sm:col-span-6 hidden sm:block bg-custom-background">
             <div className="h-full">
               <Image
-                src="/Bibliophile-amico.png"
+                src="/library-reading.svg"
                 className="hidden sm:block p-5 object-cover "
                 width={600}
                 height={600}
                 loading="lazy"
-                alt="Bibliophile-amico"
+                alt="Students reading in a welcoming college library"
               />
             </div>
           </div>

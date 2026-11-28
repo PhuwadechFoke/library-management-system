@@ -12,9 +12,13 @@ export async function PATCH(request, { params: { id } }) {
         { status: 401 }
       );
     }
-    if (session.user.role !== "ADMIN") {
+    const actor = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    });
+    if (actor?.role !== "ADMIN") {
       return NextResponse.json(
-        { message: "ไม่มีสิทธิ์เปลี่ยนบทบาทผู้ใช้" },
+        { message: "เฉพาะผู้ดูแลระบบเท่านั้นที่จัดการสิทธิ์ได้" },
         { status: 403 }
       );
     }
@@ -30,9 +34,9 @@ export async function PATCH(request, { params: { id } }) {
     const { role } = await request.json();
 
     // Validate role value
-    if (!role || !["ADMIN", "USER"].includes(role)) {
+    if (!role || !["ADMIN", "LIBRARIAN", "USER"].includes(role)) {
       return NextResponse.json(
-        { message: "บทบาทไม่ถูกต้อง กรุณาระบุ ADMIN หรือ USER" },
+        { message: "บทบาทไม่ถูกต้อง" },
         { status: 400 }
       );
     }

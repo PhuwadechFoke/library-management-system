@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="560" viewBox="0 0 760 560" fill="none">
+  <title>Modern college library with book shelves and reading space</title>
+  <defs>
+    <linearGradient id="room" x1="119" y1="62" x2="665" y2="503" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8EB"/>
+      <stop offset="1" stop-color="#E9C9A7"/>
+    </linearGradient>
+    <linearGradient id="window" x1="281" y1="93" x2="510" y2="298" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F9FFFA"/>
+      <stop offset="1" stop-color="#CBDFD3"/>
+    </linearGradient>
+    <linearGradient id="table" x1="278" y1="398" x2="611" y2="481" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9D583B"/>
+      <stop offset="1" stop-color="#65372E"/>
+    </linearGradient>
+    <filter id="shadow" x="79" y="35" width="634" height="509" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+  <circle cx="393" cy="280" r="231" fill="#F0D8B8" fill-opacity=".45"/>
+  <ellipse cx="402" cy="482" rx="255" ry="22" fill="#492C2A" fill-opacity=".17" filter="url(#shadow)"/>
+  <rect x="123" y="57" width="514" height="421" rx="28" fill="url(#room)"/>
+  <path d="M271 278V177c0-69 53-125 119-125s119 56 119 125v101H271Z" fill="#F3E2CB"/>
+  <path d="M291 278V177c0-57 44-104 99-104s99 47 99 104v101H291Z" fill="url(#window)"/>
+  <path d="M390 77v201M299 174h183" stroke="#B2C7B7" stroke-width="7" stroke-linecap="round"/>
+  <path d="M300 176c31-23 58-34 90-34s59 11 90 34" stroke="#C7D8CB" stroke-width="3"/>
+  <path d="M161 112h94v283h-94z" fill="#784337"/>
+  <path d="M153 164h110v11H153zM153 238h110v11H153zM153 312h110v11H153zM153 386h110v11H153z" fill="#53342F"/>
+  <path d="M171 126h20v36h-20zM198 119h18v43h-18zM222 131h23v31h-23zM171 183h19v50h-19zM196 181h23v52h-23zM225 190h20v43h-20zM171 257h24v49h-24zM202 260h18v46h-18zM226 251h19v55h-19zM172 332h19v50h-19zM197 337h21v45h-21zM223 328h22v54h-22z" fill="#E3B66F"/>
+  <path d="M177 126h8v36h-8zM204 119h7v43h-7zM229 131h8v31h-8zM177 183h7v50h-7zM203 181h8v52h-8zM231 190h8v43h-8zM179 257h8v49h-8zM208 260h7v46h-7zM232 251h7v55h-7zM178 332h7v50h-7zM204 337h8v45h-8zM230 328h8v54h-8z" fill="#B66A45"/>
+  <path d="M520 110h91v286h-91z" fill="#89503C"/>
+  <path d="M512 163h107v12H512zM512 237h107v12H512zM512 311h107v12H512zM512 385h107v12H512z" fill="#58382F"/>
+  <path d="M533 123h20v39h-20zM559 118h17v44h-17zM583 130h19v32h-19zM532 184h21v49h-21zM560 180h19v53h-19zM586 190h17v43h-17zM533 257h18v49h-18zM557 255h24v51h-24zM586 264h17v42h-17zM533 331h21v50h-21zM561 333h17v48h-17zM585 326h19v55h-19z" fill="#F0D195"/>
+  <path d="M539 123h7v39h-7zM565 118h7v44h-7zM589 130h7v32h-7zM539 184h7v49h-7zM566 180h7v53h-7zM591 190h7v43h-7zM539 257h7v49h-7zM565 255h8v51h-8zM592 264h7v42h-7zM539 331h7v50h-7zM566 333h7v48h-7zM591 326h7v55h-7z" fill="#B66A45"/>
+  <path d="M238 359h311v28H238z" fill="#674137"/>
+  <path d="M257 387h14v81h-14zM513 387h14v81h-14z" fill="#4B312D"/>
+  <path d="M307 376h250v21H307z" fill="url(#table)"/>
+  <path d="M328 397h15v71h-15zM522 397h15v71h-15z" fill="#643A30"/>
+  <path d="M390 332c4-30 28-47 52-41 23 5 33 28 24 51-8 20-31 30-52 21-18-8-27-17-24-31Z" fill="#BA7955"/>
+  <path d="M388 327c-4-26 9-45 33-48 23-3 39 11 42 32-16-5-26-15-33-27-5 19-20 30-42 35v8Z" fill="#30292B"/>
+  <path d="M369 379c10-25 34-37 60-31 24 5 35 23 39 52h-98l-1-21Z" fill="#9D2633"/>
+  <path d="M370 357c-13 17-17 31-15 51h24l12-36-21-15ZM447 358c17 7 28 24 29 50h-23l-20-35 14-15Z" fill="#BA7955"/>
+  <path d="M344 373c31-21 57-28 78-27 27 1 55 11 83 30v22H344v-25Z" fill="#F7E5C5"/>
+  <path d="M423 347v51" stroke="#C58D5C" stroke-width="3"/>
+  <path d="M357 383c20-11 40-16 60-15M432 368c20 1 39 7 58 18" stroke="#D2AA78" stroke-width="3" stroke-linecap="round"/>
+  <path d="M117 407c0-36 8-61 26-76 2 28-2 53-13 77l-13-1ZM106 412c-17-22-23-44-17-65 15 18 24 38 29 62l-12 3ZM625 392c2-29 13-49 32-61-2 22-10 44-23 64l-9-3Z" fill="#5D805E"/>
+  <path d="M94 406h58l-6 57h-47l-5-57Z" fill="#9D3A3D"/>
+  <path d="M92 404h62v10H92z" fill="#C27656"/>
+  <path d="m580 94 5-12M612 103l10-9M634 132l13-2" stroke="#D29A48" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="604" cy="71" r="15" fill="#E7B45C"/>
+  <path d="M286 431h187" stroke="#D5AB7A" stroke-opacity=".5" stroke-width="2"/>
+</svg>

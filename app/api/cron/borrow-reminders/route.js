@@ -4,6 +4,7 @@ import {
   addDays,
   bangkokDay,
   bangkokDayStart,
+  formatThaiDate,
   sendBorrowReminder,
 } from "@/lib/borrow-reminders";
 
@@ -28,7 +29,6 @@ export async function GET(request) {
       isReturned: false,
       status: { notIn: ["RETURNED", "LOST"] },
       dueDate: { lt: bangkokDayStart(dayAfterTomorrow) },
-      borrower: { user: { email: { not: null } } },
     },
     include: {
       book: { select: { title: true } },
@@ -43,10 +43,22 @@ export async function GET(request) {
     },
   });
 
-  const results = { dueTomorrow: 0, overdue: 0, skipped: 0, failed: 0 };
+  const results = {
+    dueToday: 0,
+    dueTomorrow: 0,
+    overdue: 0,
+    skipped: 0,
+    failed: 0,
+    emailFailed: 0,
+  };
   for (const borrow of candidates) {
     const dueDay = bangkokDay(borrow.dueDate);
-    const type = dueDay === tomorrow ? "DUE_TOMORROW" : dueDay < today ? "OVERDUE" : null;
+    const type =
+      dueDay === tomorrow
+        ? "DUE_TOMORROW"
+        : dueDay <= today
+          ? "OVERDUE"
+          : null;
     if (!type) continue;
 
     const reminderDay = bangkokDayStart(today);
@@ -59,13 +71,46 @@ export async function GET(request) {
     }
 
     try {
-      await sendBorrowReminder({ borrow, type });
-      await db.borrowReminder.create({ data: { borrowId: borrow.id, type, reminderDay } });
-      if (type === "OVERDUE") results.overdue += 1;
+      await db.$transaction(async (tx) => {
+        await tx.borrowReminder.create({
+          data: { borrowId: borrow.id, type, reminderDay },
+        });
+        await tx.notification.create({
+          data: {
+            userId: borrow.borrowerId,
+            title:
+              dueDay === today
+                ? "ถึงกำหนดคืนหนังสือวันนี้"
+                : dueDay < today
+                  ? "หนังสือเกินกำหนดคืน"
+                  : "หนังสือครบกำหนดคืนพรุ่งนี้",
+            message: `"${borrow.book.title}" กำหนดคืนวันที่ ${formatThaiDate(
+              borrow.dueDate
+            )} กรุณานำมาคืนที่ห้องสมุด`,
+            link: "/books/my-books",
+          },
+        });
+      });
+
+      if (dueDay === today) results.dueToday += 1;
+      else if (type === "OVERDUE") results.overdue += 1;
       else results.dueTomorrow += 1;
     } catch (error) {
+      if (error?.code === "P2002") {
+        results.skipped += 1;
+        continue;
+      }
       results.failed += 1;
-      console.error(`Could not send ${type} reminder for borrow ${borrow.id}:`, error);
+      console.error(`Could not create ${type} reminder for borrow ${borrow.id}:`, error);
+      continue;
+    }
+
+    if (dueDay === today) continue;
+    try {
+      await sendBorrowReminder({ borrow, type });
+    } catch (error) {
+      results.emailFailed += 1;
+      console.error(`Could not email ${type} reminder for borrow ${borrow.id}:`, error);
     }
   }
 

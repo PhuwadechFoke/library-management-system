@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 import { randomUUID } from "node:crypto";
 import { syncBookAvailabilityStatus } from "@/lib/bookAvailability";
+import { isStaffRole } from "@/lib/userRoles";
 
 export async function PUT(request, { params: { id } }) {
   try {
@@ -11,7 +12,7 @@ export async function PUT(request, { params: { id } }) {
     if (!session?.user?.id) {
       return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
     }
-    if (session.user.role !== "ADMIN") {
+    if (!isStaffRole(session.user.role)) {
       return NextResponse.json({ message: "ไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้งาน" }, { status: 403 });
     }
 
@@ -144,7 +145,7 @@ export async function DELETE(request, { params: { id } }) {
     if (!session?.user?.id) {
       return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
     }
-    if (session.user.role !== "ADMIN") {
+    if (!isStaffRole(session.user.role)) {
       return NextResponse.json({ message: "ไม่มีสิทธิ์ลบผู้ใช้งาน" }, { status: 403 });
     }
     if (session.user.id === id) {

@@ -311,6 +311,63 @@
 .landing-copy > :nth-child(4) { animation-delay: 300ms; }
 .landing-copy > :nth-child(5) { animation-delay: 380ms; }
 
+.landing-title-main {
+  animation: landing-text-reveal 850ms 120ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.landing-title-accent {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  background-size: 220% 220%;
+  animation: landing-text-reveal 900ms 260ms cubic-bezier(0.2, 0.75, 0.25, 1) both,
+    landing-gradient-flow 7s 1.2s ease-in-out infinite;
+}
+
+.landing-title-accent::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.08em;
+  left: 0;
+  height: 0.055em;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, hsl(0 72% 42% / 0), hsl(0 72% 42% / 0.65), hsl(38 90% 55% / 0.8), hsl(38 90% 55% / 0));
+  content: "";
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: landing-underline-draw 650ms 850ms cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
+}
+
+.dark .landing-title-accent::after {
+  background: linear-gradient(90deg, hsl(0 72% 65% / 0), hsl(0 72% 65% / 0.75), hsl(38 90% 65% / 0.85), hsl(38 90% 65% / 0));
+}
+
+.landing-description {
+  animation: landing-text-reveal 750ms 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+@keyframes landing-text-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes landing-gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes landing-underline-draw {
+  to { transform: scaleX(1); }
+}
+
 .landing-art-ring {
   animation: landing-ring 18s linear infinite;
 }
@@ -449,8 +506,30 @@
 
 @media (prefers-reduced-motion: reduce) {
   .admin-panel,
-  .admin-content > * {
+  .admin-content > *,
+  .landing-copy > *,
+  .landing-title-main,
+  .landing-title-accent,
+  .landing-description,
+  .landing-title-accent::after,
+  .landing-art-ring,
+  .landing-illustration,
+  .landing-float-card {
     animation: none;
+  }
+
+  .landing-copy > * {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .landing-title-accent {
+    background-position: center;
+  }
+
+  .landing-title-accent::after {
+    transform: scaleX(1);
   }
 
   .admin-brand,

@@ -30,14 +30,14 @@ export default function ParticlesDemo() {
             {t("landing.eyebrow")}
           </div>
 
-          <h1 className="text-4xl font-black leading-[1.15] tracking-tight text-zinc-950 dark:text-white sm:text-6xl lg:text-7xl">
-            {t("landing.title")}
+          <h1 className="landing-heading text-4xl font-black leading-[1.15] tracking-tight text-zinc-950 dark:text-white sm:text-6xl lg:text-7xl">
+            <span className="landing-title-main block">{t("landing.title")}</span>
             <span className="landing-title-accent mt-1 block bg-gradient-to-r from-red-800 via-red-600 to-amber-500 bg-clip-text text-transparent dark:from-red-300 dark:via-orange-300 dark:to-amber-200">
               {t("landing.titleAccent")}
             </span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-base leading-8 text-zinc-600 dark:text-zinc-300 sm:text-lg">
+          <p className="landing-description mt-5 max-w-xl text-base leading-8 text-zinc-600 dark:text-zinc-300 sm:text-lg">
             {t("landing.description")}
           </p>
 
@@ -83,7 +83,7 @@ export default function ParticlesDemo() {
           <div className="landing-art-ring landing-art-ring-inner absolute aspect-square w-[66%] rounded-full border border-amber-600/15 dark:border-amber-200/10" />
           <div className="landing-image-wrap relative flex aspect-square w-full items-center justify-center">
             <Image
-              src="/Bibliophile-amico.png"
+              src="/library-reading.svg"
               width={720}
               height={720}
               priority

@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import LocalizedText from "@/components/frontend/LocalizedText";
 import { useLanguage } from "@/context/LanguageContext";
+import { sortBorrowRecordsByDueDate } from "@/lib/borrow-due-status";
 
 export default function page() {
   const { data: session } = useSession();
@@ -82,6 +83,7 @@ export default function page() {
   };
 
   const borrowRecords = Array.isArray(borrows) ? borrows : [];
+  const sortedBorrowRecords = sortBorrowRecordsByDueDate(borrowRecords);
   const reservationRecords = Array.isArray(reservations) ? reservations : [];
   const borrowedCount = borrowRecords.filter(
     (borrow) => !borrow.isReturned && borrow.status === "BORROWED"
@@ -268,7 +270,7 @@ export default function page() {
             <Skeleton className="h-72 w-full rounded-2xl" />
           ) : (
             <DataTable
-              data={borrowRecords}
+              data={sortedBorrowRecords}
               columns={columns}
               filterKeys={["bookTitle", "dueDate"]}
             />
